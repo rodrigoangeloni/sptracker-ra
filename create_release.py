@@ -131,14 +131,13 @@ if not linux_only:
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "wsgi-request-logger"], check=True, universal_newlines=True)
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "simplejson"], check=True, universal_newlines=True)
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "pyinstaller"], check=True, universal_newlines=True)
-        subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "PySide2"], check=True, universal_newlines=True)
+        subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "PySide6"], check=True, universal_newlines=True)
         # Since this downloads the entire file and is version locked, don't do it if already installed
         try:
-            subprocess.run(["env\windows\Scripts\pip.exe", "show", "aspw"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["env\windows\Scripts\pip.exe", "show", "apsw"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except:
-            subprocess.run(["env\windows\Scripts\pip.exe", "install", "https://github.com/rogerbinns/apsw/releases/download/3.35.4-r1/apsw-3.35.4-r1.zip",
-                            "--global-option=fetch", "--global-option=--version", "--global-option=3.35.4", "--global-option=--all",
-                            "--global-option=build", "--global-option=--enable-all-extensions"], check=True,universal_newlines=True)
+            # Use a more modern version of APSW that supports Python 3.11
+            subprocess.run(["env\windows\Scripts\pip.exe", "install", "apsw"], check=True, universal_newlines=True)
         lastcheck.touch()
 
 if build_ptracker:

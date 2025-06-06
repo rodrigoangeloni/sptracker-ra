@@ -1,46 +1,73 @@
+#!/bin/bash
+# Linux build script for SPTracker using WSL
 
-echo Setting environment
-export PYTHONPATH=$PWD:$PWD/stracker/externals
+set -e  # Exit on any error
 
-echo Cleaning up old version
-cd stracker
-rm -f stracker_linux_x86.tgz
-rm -rf dist
-rm -rf build
+echo "=== SPTracker Linux Build Script ==="
+echo "Starting Linux build in WSL..."
 
-echo Setting up python environment
-
-# Setting up the env and installing/upgrading takes forever,
-# so only do it once a day, or if it hasn't been done yet
-if find env/linux/lastcheck -mtime 0 > /dev/null
-then
-    . env/linux/bin/activate
-else
-    virtualenv env/linux
-    . env/linux/bin/activate
-    echo Installing/upgrading packages
-    pip install --upgrade bottle
-    pip install --upgrade cherrypy
-    pip install --upgrade psycopg2
-    pip install --upgrade python-dateutil
-    pip install --upgrade wsgi-request-logger
-    pip install --upgrade simplejson
-    pip install --upgrade pyinstaller
-    # This is so incredibly slow, and no way to auto-upgrade
-    if ! pip show apsw
-    then
-        pip install https://github.com/rogerbinns/apsw/releases/download/3.35.4-r1/apsw-3.35.4-r1.zip \
-            --global-option=fetch --global-option=--version --global-option=3.35.4 --global-option=--all \
-            --global-option=build --global-option=--enable-all-extensions
-    fi
-    touch env/linux/lastcheck
+# Install dependencies if needed
+if ! command -v python3 &> /dev/null; then
+    echo "Installing Python3..."
+    sudo apt update
+    sudo apt install -y python3 python3-pip python3-venv
 fi
 
-pyinstaller --clean -y -s --exclude-module http_templates --hidden-import cherrypy.wsgiserver.wsgiserver3 --hidden-import psycopg2 stracker.py
+# Create virtual environment for Linux
+if [ ! -d "env/linux" ]; then
+    echo "Creating Linux virtual environment..."
+    python3 -m venv env/linux
+fi
 
-mv dist/stracker dist/stracker_linux_x86
-tar cvzf stracker_linux_x86.tgz -C dist stracker_linux_x86
-rm -rf dist
-rm -rf build
+# Activate virtual environment
+source env/linux/bin/activate
 
-exit 0
+# Install/upgrade packages
+echo "Installing Python packages..."
+pip install --upgrade pip
+pip install --upgrade bottle
+pip install --upgrade cherrypy
+pip install --upgrade python-dateutil
+pip install --upgrade wsgi-request-logger
+pip install --upgrade simplejson
+pip install --upgrade pyinstaller
+
+# Install psycopg2 (PostgreSQL adapter)
+pip install --upgrade psycopg2-binary
+
+# Install APSW (SQLite wrapper)
+pip install --upgrade apsw
+
+# Build stracker for Linux
+echo "Building stracker for Linux..."
+cd stracker
+
+# Clean previous builds
+rm -rf dist build
+
+# Build with PyInstaller
+pyinstaller --name stracker \
+    --clean -y --onefile \
+    --exclude-module http_templates \
+    --hidden-import cherrypy.wsgiserver.wsgiserver3 \
+    --hidden-import psycopg2 \
+    --path .. \
+    --path externals \
+    stracker.py
+
+# Generate default config
+if [ -f "stracker-default.ini" ]; then
+    rm stracker-default.ini
+fi
+
+# Run stracker to generate default config (will fail but create config)
+./dist/stracker --stracker_ini stracker-default.ini || true
+
+# Create tarball
+echo "Creating Linux distribution tarball..."
+tar -czf stracker_linux_x86.tgz -C dist stracker
+
+echo "Linux build completed successfully!"
+echo "Generated: stracker/stracker_linux_x86.tgz"
+
+cd ..
