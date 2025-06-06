@@ -1,52 +1,317 @@
-# Introduction
+# sptracker - Suite de Aplicaciones para Assetto Corsa
 
-This is the source code of `ptracker` and `stracker` (or in short: `sptracker`), an app suite for 
-Assetto Corsa. The original author (NEYS) has stopped development and I've taken it upon myself
-to revitalize and improve this project.
+[![Licencia](https://img.shields.io/badge/Licencia-GPL%20v3-blue.svg)](LICENSE.txt)
+[![Python](https://img.shields.io/badge/Python-3.8+-green.svg)](https://python.org)
+[![Plataforma](https://img.shields.io/badge/Plataforma-Windows%20%7C%20Linux-lightgrey.svg)](https://github.com/docwilco/sptracker)
 
-Please respect the license as provided in [LICENSE.txt].
+**sptracker** es una suite completa de aplicaciones para [Assetto Corsa](http://www.assettocorsa.net/) que incluye `ptracker` (rastreador personal) y `stracker` (rastreador de servidor). Esta herramienta proporciona análisis avanzado de rendimiento, estadísticas detalladas y funcionalidades mejoradas tanto para jugadores individuales como para administradores de servidores.
 
-# Before you start modifying
+## 📋 Tabla de Contenidos
 
-Quoting NEYS from the original README.txt:
-> I was hesitating for a long time to open up the source code for this. The main reason for this
-> was the concern that there might be a lot of forks of ptracker and stracker with different 
-> network protocols and that not enought care will be taken to make the protocols backwards and
-> forward compatible. 
-> 
-> Now that I see, that my time for contributing to ptracker and stracker will be more limited
-> than in the past, I think it is fair to open up the source code, so others might want to 
-> jump in and help.
-> 
-> I can just appeal to the coders to consider contributing to the project instead creating a fork. 
-> I'm willing to accept patches if they are mature enough to be integrated and integrate these 
-> patches into the mainstream project with the usual experimental/stable releases.
+- [Características](#-características)
+- [Componentes](#-componentes)
+- [Requisitos del Sistema](#-requisitos-del-sistema)
+- [Instalación](#-instalación)
+- [Construcción desde el Código Fuente](#-construcción-desde-el-código-fuente)
+- [Uso](#-uso)
+- [Configuración](#-configuración)
+- [Desarrollo](#-desarrollo)
+- [Versionado](#-versionado)
+- [Licencia](#-licencia)
+- [Contacto](#-contacto)
 
-NEYS has since said on [RaceDepartment.com](https://www.racedepartment.com/threads/sp-tracker_source.157319/#post-3380915):
-> feel free to use the project for whatever purpose you like, as long as you respect the license.
-> I fear I have to say that I've stepped down from playing AC recently and due to that my interest
-> in the AC mods went also down. If you want to take over the project I am open to reference the
-> fork in the main page here on RD, such that users are guided to your page. 
+## ✨ Características
 
-So I have setup a [GitHub repo](https://github.com/docwilco/sptracker) to work
-on this project, and allow others to easily collaborate. Feel free to file
-issues and do pull requests.
+### Características Principales
+- **Análisis de rendimiento en tiempo real** - Tiempos de vuelta, deltas y comparaciones
+- **Interfaz gráfica avanzada** - Widgets personalizables con múltiples temas
+- **Estadísticas completas** - Base de datos de rendimiento y análisis histórico
+- **Soporte multiplataforma** - Windows y Linux
+- **Interfaz web** - Panel de control basado en navegador para servidores
+- **Comunicación cliente-servidor** - Protocolo de red optimizado
+- **Soporte de base de datos** - SQLite y PostgreSQL
 
-# Getting started
+### Funcionalidades Específicas
+- Comparación de vueltas con ghost cars
+- Información detallada de combustible y neumáticos
+- Chat mejorado con filtros
+- Sistema de autenticación para servidores
+- Exportación de datos para análisis externos
+- Monitoreo de sesiones en tiempo real
+- Soporte para múltiples idiomas
 
-`create_release.py` does most of the work of fetching and installing dependencies
-using virtualenv and pip, and building, but before running it, you need:
-1. Windows
-1. Assetto Corsa
-1. Python 3.8+
-1. virtualenv (see [here](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#installing-virtualenv) for installation instructions)
-1. [Nullsoft Scriptable Install System 3.x](https://nsis.sourceforge.io/Download)
-1. A linux environment (I use Ubuntu with WSL2, but a remote host also works)
-1. A `release_settings.py` which you can make by copying and editing `release_settings.py.in`
+## 🔧 Componentes
 
-# Contacting the authors
+### ptracker (Rastreador Personal)
+Aplicación del lado del cliente que se ejecuta como complemento dentro de Assetto Corsa:
+- **Análisis de vueltas**: Comparación en tiempo real con mejores tiempos
+- **Información de carrera**: Datos de combustible, neumáticos y rendimiento
+- **Interfaz personalizable**: Múltiples widgets y temas visuales
+- **Chat mejorado**: Funcionalidades adicionales de comunicación
 
-The original author NEYS is contactable as user `never_eat_yellow_snow1` at the
-[Assetto Corsa forums](http://www.assettocorsa.net/forum/index.php) or as user `Neys` at the 
-[RaceDepartment forums](http://www.racedepartment.com/forums/).
-You can contact the current maintainer (DocWilco) on [GitHub](https://github.com/docwilco/sptracker).
+### stracker (Rastreador de Servidor)
+Aplicación del lado del servidor para administradores de servidores de Assetto Corsa:
+- **Base de datos de estadísticas**: Almacenamiento de datos de todos los jugadores
+- **Interfaz web**: Panel de control accesible desde navegador
+- **Gestión de usuarios**: Sistema de autenticación y permisos
+- **Monitoreo en tiempo real**: Seguimiento de sesiones activas
+- **Filtros y moderación**: Control de chat y lista de baneos
+
+## 💻 Requisitos del Sistema
+
+### Requisitos Mínimos
+- **Sistema Operativo**: Windows 10+ o Ubuntu 18.04+
+- **Assetto Corsa**: Instalación completa del juego
+- **Python**: 3.8 o superior (solo para desarrollo)
+- **Memoria RAM**: 4GB mínimo, 8GB recomendado
+- **Espacio en disco**: 500MB para instalación completa
+
+### Para Desarrollo
+- **Python**: 3.8+ con pip y virtualenv
+- **Git**: Para control de versiones
+- **NSIS**: 3.x para crear instaladores de Windows
+- **Entorno Linux**: WSL2, VM o host remoto para compilación multiplataforma
+
+## 🚀 Instalación
+
+### Instalación para Usuarios
+1. Descarga la última versión desde la sección [Releases](https://github.com/docwilco/sptracker/releases)
+2. Ejecuta el instalador `ptracker-V[version].exe` para Windows
+3. Para servidores Linux, extrae `stracker_linux_x86.tgz`
+4. Sigue las instrucciones del instalador
+5. Configura Assetto Corsa para cargar el complemento
+
+### Instalación Rápida (Windows)
+```powershell
+# Descargar e instalar la última versión
+Invoke-WebRequest -Uri "https://github.com/docwilco/sptracker/releases/latest" -OutFile "ptracker-latest.exe"
+.\ptracker-latest.exe
+```
+
+## 🛠️ Construcción desde el Código Fuente
+
+### Configuración del Entorno de Desarrollo
+```powershell
+# Clonar el repositorio
+git clone https://github.com/docwilco/sptracker.git
+cd sptracker
+
+# Instalar Python y virtualenv
+pip install virtualenv
+
+# Crear archivo de configuración
+Copy-Item release_settings.py.in release_settings.py
+# Editar release_settings.py con tus rutas específicas
+```
+
+### Construcción Completa
+```powershell
+# Construir todas las aplicaciones
+python create_release.py 5.0.0
+
+# Construir solo ptracker
+python create_release.py --ptracker_only 5.1.0
+
+# Construir solo stracker
+python create_release.py --stracker_only 5.2.0
+
+# Modo de prueba (sin commit git)
+python create_release.py --test_release_process 5.0.0
+```
+
+### Opciones de Construcción
+- `--test_release_process`: Modo de prueba sin modificaciones git
+- `--ptracker_only`: Construir solo el cliente ptracker
+- `--stracker_only`: Construir solo el servidor stracker
+- `--windows_only`: Solo versiones de Windows
+- `--linux_only`: Solo versiones de Linux
+- `--stracker_packager_only`: Solo el empaquetador de stracker
+
+### Gestión de Versiones
+Para facilitar la actualización de versiones, puedes usar el script auxiliar:
+
+```powershell
+# Actualizar a una versión específica
+python update_version.py 5.1.0
+
+# Incrementar automáticamente la versión
+python update_version.py --increment patch  # 5.0.0 → 5.0.1
+python update_version.py --increment minor  # 5.0.0 → 5.1.0
+python update_version.py --increment major  # 5.0.0 → 6.0.0
+
+# Luego construir el release
+python create_release.py 5.1.0
+```
+
+## 📖 Uso
+
+### Configuración de ptracker
+1. Inicia Assetto Corsa
+2. Ve a Configuración → General → UI Modules
+3. Activa "ptracker"
+4. Configura las opciones según tus preferencias
+
+### Configuración de stracker (Servidor)
+```bash
+# Ejecutar stracker en servidor Linux
+./stracker --help
+
+# Generar configuración por defecto
+./stracker --stracker_ini stracker-default.ini
+
+# Ejecutar con configuración específica
+./stracker --stracker_ini mi-config.ini
+```
+
+### Interfaz Web de stracker
+- Accede a `http://[servidor]:8080` para ver estadísticas
+- Panel de administración disponible con credenciales configuradas
+- API REST para integración con otras aplicaciones
+
+## ⚙️ Configuración
+
+### Archivos de Configuración Principales
+- `ptracker.ini`: Configuración del cliente ptracker
+- `stracker.ini`: Configuración del servidor stracker
+- `release_settings.py`: Configuración de construcción del proyecto
+
+### Configuración de Base de Datos
+stracker soporta SQLite (por defecto) y PostgreSQL:
+
+```ini
+[DATABASE]
+database_type = sqlite3
+database_file = stracker.db3
+
+# Para PostgreSQL
+# database_type = postgres
+# postgres_host = localhost
+# postgres_user = stracker
+# postgres_pwd = password
+# postgres_db = stracker
+```
+
+## 👨‍💻 Desarrollo
+
+### Estructura del Proyecto
+```
+sptracker/
+├── ptracker_lib/          # Biblioteca principal compartida
+├── stracker/              # Código del servidor
+├── images/                # Recursos gráficos
+├── sounds/                # Archivos de audio
+├── icons/                 # Iconos de la interfaz
+├── www/                   # Documentación web
+├── create_release.py      # Script de construcción principal
+└── README.md             # Este archivo
+```
+
+### Arquitectura de Software
+- **Lenguaje**: Python 3.8+
+- **GUI**: PySide6/Qt para interfaces nativas
+- **Web**: CherryPy para servidor HTTP
+- **Base de datos**: SQLite/PostgreSQL con APSW
+- **Empaquetado**: PyInstaller para ejecutables
+- **Instaladores**: NSIS para Windows
+
+### Contribuir al Proyecto
+1. Fork el repositorio en GitHub
+2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Realiza tus cambios y añade tests si es necesario
+4. Commit tus cambios (`git commit -am 'Añadir nueva funcionalidad'`)
+5. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+6. Crea un Pull Request
+
+### Estándares de Código
+- Seguir PEP 8 para estilo de código Python
+- Documentar funciones y clases importantes
+- Añadir tests para funcionalidades nuevas
+- Mantener compatibilidad con Python 3.8+
+
+### Esquema de Versionado
+El proyecto utiliza [Semantic Versioning](https://semver.org/) a partir de la versión **5.0.0**:
+- **MAJOR** (5.x.x): Cambios incompatibles en la API o arquitectura
+- **MINOR** (x.Y.x): Nuevas funcionalidades manteniendo compatibilidad
+- **PATCH** (x.x.Z): Correcciones de bugs y mejoras menores
+
+**Nota**: Las versiones anteriores a 5.0.0 corresponden al desarrollo original de NEYS. La nueva numeración (5.0.0+) marca el inicio del mantenimiento comunitario y las mejoras significativas del proyecto.
+
+## 🏷️ Versionado
+
+### Esquema de Versiones
+A partir de la versión **5.0.0**, sptracker utiliza [Semantic Versioning](https://semver.org/):
+
+- **5.x.x** - Versión principal (cambios incompatibles)
+- **x.Y.x** - Versión menor (nuevas funcionalidades compatibles)
+- **x.x.Z** - Versión de parche (correcciones de bugs)
+
+### Gestión de Versiones
+El proyecto incluye herramientas para facilitar la gestión de versiones:
+
+```powershell
+# Ver versión actual
+python -c "from version_config import get_version; print(get_version())"
+
+# Actualizar versión manualmente
+python update_version.py 5.2.0
+
+# Incrementar versión automáticamente
+python update_version.py --increment patch   # Correcciones
+python update_version.py --increment minor   # Nuevas funcionalidades
+python update_version.py --increment major   # Cambios incompatibles
+```
+
+### Historial de Versiones
+- **5.0.0+**: Mantenimiento comunitario, mejoras en construcción y documentación
+- **4.x.x y anteriores**: Desarrollo original por NEYS (2015-2020)
+
+### Releases y Distribución
+Cada versión genera los siguientes artefactos:
+- `ptracker-V[version].exe`: Instalador de Windows para ptracker
+- `stracker-V[version].zip`: Paquete completo de stracker (Windows + Linux)
+- `stracker_linux_x86.tgz`: Binario específico para Linux
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo la **GNU General Public License v3.0**. Ver el archivo [LICENSE.txt](LICENSE.txt) para más detalles.
+
+### Nota sobre la Licencia
+Como se indica en la GPL v3, tienes la libertad de:
+- Usar el software para cualquier propósito
+- Estudiar y modificar el código fuente
+- Distribuir copias del software
+- Distribuir versiones modificadas
+
+Siempre que respetes los términos de la licencia, incluyendo mantener el código fuente disponible bajo la misma licencia.
+
+## 📞 Contacto
+
+### Autores y Mantenedores
+- **Autor Original**: NEYS
+  - Usuario en [Assetto Corsa Forums](http://www.assettocorsa.net/forum/index.php): `never_eat_yellow_snow1`
+  - Usuario en [RaceDepartment](http://www.racedepartment.com/forums/): `Neys`
+
+- **Mantenedor Actual**: DocWilco
+  - GitHub: [docwilco](https://github.com/docwilco)
+  - Repositorio: [sptracker](https://github.com/docwilco/sptracker)
+
+### Soporte y Comunidad
+- **Issues y Bugs**: [GitHub Issues](https://github.com/docwilco/sptracker/issues)
+- **Discusiones**: [GitHub Discussions](https://github.com/docwilco/sptracker/discussions)
+- **RaceDepartment**: [Hilo oficial del proyecto](https://www.racedepartment.com/threads/sp-tracker_source.157319/)
+
+### Mensaje del Autor Original
+> "Siéntete libre de usar el proyecto para cualquier propósito que desees, siempre que respetes la licencia. 
+> He dejado de jugar AC recientemente y debido a eso mi interés en los mods de AC también ha disminuido. 
+> Si quieres hacerte cargo del proyecto, estoy abierto a referenciar el fork en la página principal 
+> aquí en RD, para que los usuarios sean dirigidos a tu página."
+
+---
+
+<div align="center">
+
+**¡Gracias por usar sptracker!** 🏁
+
+Si este proyecto te ha sido útil, considera darle una ⭐ en GitHub y compartirlo con la comunidad de Assetto Corsa.
+
+</div>

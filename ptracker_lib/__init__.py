@@ -1,1 +1,1 @@
-version = 'test-version-5-nsis'
+version = '5.0.0'
