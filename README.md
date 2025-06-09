@@ -104,7 +104,22 @@ Copy-Item release_settings.py.in release_settings.py
 # Editar release_settings.py con tus rutas específicas
 ```
 
-### Construcción Completa
+### Construcción Interactiva (Recomendado)
+Para facilitar el proceso de construcción, puedes usar el script interactivo:
+
+```powershell
+# Ejecutar el constructor interactivo
+python interactive_builder.py
+```
+
+El script interactivo te guiará paso a paso a través de:
+- **Selección de versión**: Especifica la versión que quieres construir
+- **Opciones de construcción**: Elige qué componentes compilar (ptracker, stracker, o ambos)
+- **Configuración de plataforma**: Windows, Linux o ambas
+- **Modo de prueba**: Opción para probar sin hacer commits git
+- **Información detallada**: Muestra información completa de todos los archivos generados
+
+### Construcción Manual
 ```powershell
 # Construir todas las aplicaciones
 python create_release.py 5.0.0
@@ -118,6 +133,21 @@ python create_release.py --stracker_only 5.2.0
 # Modo de prueba (sin commit git)
 python create_release.py --test_release_process 5.0.0
 ```
+
+### Archivos Generados
+Después de una construcción exitosa, encontrarás los siguientes archivos:
+
+**En el directorio `versions/`:**
+- `ptracker-V[version].exe`: Instalador de Windows para ptracker (cliente)
+- `stracker-packager-V[version].exe`: Empaquetador standalone de stracker
+- `stracker-V[version].zip`: Paquete completo de stracker (servidor)
+
+**En el directorio `dist/`:**
+- `ptracker.exe`: Ejecutable de ptracker para desarrollo
+
+**En el directorio `stracker/dist/`:**
+- `stracker.exe`: Ejecutable principal del servidor
+- `stracker-packager.exe`: Herramienta de empaquetado
 
 ### Opciones de Construcción
 - `--test_release_process`: Modo de prueba sin modificaciones git
@@ -262,14 +292,14 @@ python update_version.py --increment major   # Cambios incompatibles
 ```
 
 ### Historial de Versiones
-- **5.0.0+**: Mantenimiento comunitario, mejoras en construcción y documentación
+- **5.0.0** (Actual): Script interactivo de construcción, mejoras en el proceso de build, documentación actualizada
 - **4.x.x y anteriores**: Desarrollo original por NEYS (2015-2020)
 
 ### Releases y Distribución
-Cada versión genera los siguientes artefactos:
+Cada versión genera los siguientes artefactos en el directorio `versions/`:
 - `ptracker-V[version].exe`: Instalador de Windows para ptracker
+- `stracker-packager-V[version].exe`: Empaquetador standalone de stracker  
 - `stracker-V[version].zip`: Paquete completo de stracker (Windows + Linux)
-- `stracker_linux_x86.tgz`: Binario específico para Linux
 
 ## 📄 Licencia
 

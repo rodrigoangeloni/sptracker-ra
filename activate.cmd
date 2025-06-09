@@ -1,6 +1,6 @@
 @echo off
 
-set "TARGET=E:\Steam\SteamApps\common\assettocorsa\apps\python\ptracker"
+set "TARGET=C:\Steam\SteamApps\common\assettocorsa\apps\python\ptracker"
 
 if exist "%TARGET%" (
     echo "Removing current link"
