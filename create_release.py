@@ -163,17 +163,40 @@ import os
 import shutil
 
 virtualenv_path = "env/windows"
-if os.path.exists(virtualenv_path):
-    print(f"Removing existing virtualenv at {virtualenv_path}")
-    try:
-        shutil.rmtree(virtualenv_path)
-    except PermissionError as e:
-        print(f"Error removing virtualenv: {e}")
-        print("Please close any applications using the virtual environment and try again.")
-        sys.exit(1)
 
-print(f"Creating new virtualenv at {virtualenv_path}")
-subprocess.run(["virtualenv", virtualenv_path], check=True, universal_newlines=True)
+# Check if virtualenv exists and is functional
+def is_virtualenv_functional(venv_path):
+    """Check if the virtual environment exists and is functional."""
+    if not os.path.exists(venv_path):
+        return False
+    
+    # Check for essential files
+    python_exe = os.path.join(venv_path, "Scripts", "python.exe")
+    pip_exe = os.path.join(venv_path, "Scripts", "pip.exe")
+    pyvenv_cfg = os.path.join(venv_path, "pyvenv.cfg")
+    
+    return all(os.path.exists(f) for f in [python_exe, pip_exe, pyvenv_cfg])
+
+if is_virtualenv_functional(virtualenv_path):
+    print(f"Using existing functional virtualenv at {virtualenv_path}")
+else:
+    if os.path.exists(virtualenv_path):
+        print(f"Removing corrupted virtualenv at {virtualenv_path}")
+        try:
+            shutil.rmtree(virtualenv_path)
+        except PermissionError as e:
+            print(f"Error removing virtualenv: {e}")
+            print("Please close VS Code or any applications using the virtual environment and try again.")
+            print("You can also manually delete the env/windows folder and run the script again.")
+            sys.exit(1)
+    
+    print(f"Creating new virtualenv at {virtualenv_path}")
+    try:
+        subprocess.run(["virtualenv", virtualenv_path], check=True, universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error creating virtualenv: {e}")
+        print("Make sure 'virtualenv' is installed: pip install virtualenv")
+        sys.exit(1)
 
 # Use virtualenv
 activate_script = os.path.join(virtualenv_path, "Scripts", "activate_this.py")

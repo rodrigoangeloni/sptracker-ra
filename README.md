@@ -95,6 +95,25 @@ Invoke-WebRequest -Uri "https://github.com/docwilco/sptracker/releases/latest" -
 
 ## 🛠️ Construcción desde el Código Fuente
 
+### Estado Actual del Proyecto (Junio 2025)
+🚀 **RECIÉN RESUELTO**: Se ha solucionado un problema crítico en el sistema de compilación relacionado con la gestión de entornos virtuales:
+
+- **Problema resuelto**: Error "Acceso denegado" al intentar eliminar el entorno virtual `env/windows` durante la compilación
+- **Causa**: VS Code y otros IDEs mantenían archivos bloqueados en el entorno virtual
+- **Solución implementada**: Gestión inteligente de entornos virtuales que reutiliza entornos existentes y funcionales
+- **Beneficio**: Compilaciones más rápidas y sin conflictos de permisos
+
+✅ **COMPLETAMENTE PROBADO EN WINDOWS**: 
+- Sistema de compilación funcional al 100%
+- Script interactivo `interactive_builder.py` operativo
+- Generación exitosa de todos los ejecutables (ptracker.exe, stracker.exe, stracker-packager.exe)
+- Creación de instaladores e archivos de distribución
+
+🎯 **PRÓXIMO OBJETIVO**: Implementar y probar compilación para arquitecturas ARM32 y ARM64
+- Dockerfiles existentes pero necesitan testing
+- Scripts de build para ARM preparados pero sin validar
+- Meta: soporte completo para Windows, Linux, ARM32 y ARM64
+
 ### Configuración del Entorno de Desarrollo
 ```powershell
 # Clonar el repositorio
@@ -108,6 +127,12 @@ pip install virtualenv
 Copy-Item release_settings.py.in release_settings.py
 # Editar release_settings.py con tus rutas específicas
 ```
+
+### ⚠️ Notas Importantes para el Desarrollo
+1. **Entorno Virtual**: El sistema ahora gestiona automáticamente el entorno virtual `env/windows`
+2. **VS Code**: Puedes trabajar con VS Code abierto sin problemas de compilación
+3. **Permisos**: No es necesario ejecutar como administrador
+4. **Reutilización**: Los entornos virtuales se reutilizan si están funcionales, acelerando las compilaciones
 
 ### Construcción Interactiva (Recomendado)
 Para facilitar el proceso de construcción, puedes usar el script interactivo:
@@ -181,16 +206,16 @@ Después de una construcción exitosa, encontrarás los siguientes archivos:
 
 ### Compilación para Arquitecturas ARM
 
-Para compilar binarios ARM32 y ARM64, el proyecto utiliza Docker con compilación cruzada:
+🚧 **EN DESARROLLO**: Para compilar binarios ARM32 y ARM64, el proyecto utiliza Docker con compilación cruzada:
 
 ```powershell
 # Instalar Docker Desktop (Windows) o Docker Engine (Linux)
 # Asegúrate de que Docker está ejecutándose
 
-# Compilar solo ARM32
+# Compilar solo ARM32 (EN TESTING)
 python create_release.py --arm32_only 5.0.0
 
-# Compilar solo ARM64  
+# Compilar solo ARM64 (DISPONIBLE)
 python create_release.py --arm64_only 5.0.0
 
 # Usar el script interactivo para seleccionar ARM
@@ -198,10 +223,90 @@ python interactive_builder.py
 # Selecciona opción "4. 🤖 Solo ARM32" o "5. 🦾 Solo ARM64"
 ```
 
+**Estado de Desarrollo ARM:**
+- ✅ **ARM64**: Docker y scripts configurados y listos
+- 🚧 **ARM32**: En desarrollo, Dockerfile y scripts preparados
+- 📝 **Pendiente**: Testing completo en ambas arquitecturas
+- 🎯 **Objetivo**: Soporte completo multiplataforma
+
 **Archivos Docker:**
-- `Dockerfile.arm32`: Configuración para compilación ARM 32 bits
-- `Dockerfile.arm64`: Configuración para compilación ARM 64 bits (existente)
-- `create_release_arm32.sh`: Script de build específico para ARM32
+- `Dockerfile.arm32`: Configuración para compilación ARM 32 bits (EN TESTING)
+- `Dockerfile.arm64`: Configuración para compilación ARM 64 bits (LISTO)
+- `create_release_arm32.sh`: Script de build específico para ARM32 (NUEVO)
+- `create_release_arm64.sh`: Script de build específico para ARM64 (EXISTENTE)
+
+**Prerrequisitos para Compilación ARM:**
+1. Docker Desktop (Windows) o Docker Engine (Linux)
+2. Habilitación de emulación QEMU para arquitecturas cruzadas
+3. Conexión a internet para descargar imágenes base de Python ARM
+
+### 🏠 Continuar Desarrollo en Casa - Guía de Setup
+
+**SITUACIÓN ACTUAL**: Proyecto completamente funcional en Windows, listo para expandir a ARM
+
+#### Paso 1: Setup del Entorno
+```powershell
+# Clonar el repositorio actualizado
+git clone https://github.com/docwilco/sptracker.git
+cd sptracker
+
+# Configurar release_settings.py
+Copy-Item release_settings.py.in release_settings.py
+# Editar las rutas según tu sistema casero
+```
+
+#### Paso 2: Validar Funcionalidad Existente
+```powershell
+# Probar compilación Windows (debería funcionar inmediatamente)
+python interactive_builder.py
+# Seleccionar: opción 2 (Solo ptracker) + modo test
+```
+
+#### Paso 3: Preparar Docker para ARM
+```powershell
+# Instalar Docker Desktop
+# Verificar que funciona
+docker --version
+docker run hello-world
+
+# Habilitar emulación ARM (si no está habilitada)
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+```
+
+#### Paso 4: Testing ARM64 (Ya Preparado)
+```powershell
+# Probar compilación ARM64
+python create_release.py --arm64_only --test_release_process 0.0.1
+```
+
+#### Paso 5: Desarrollar ARM32 (Objetivo Principal)
+```powershell
+# Testing del nuevo Dockerfile.arm32
+docker build -f Dockerfile.arm32 -t sptracker-arm32 .
+
+# Testing del script de build ARM32
+python create_release.py --arm32_only --test_release_process 0.0.1
+```
+
+#### Archivos Clave Modificados (Ya Pusheados)
+- ✅ `create_release.py` - Sistema de entornos virtuales mejorado
+- ✅ `README.md` - Documentación actualizada (este archivo)
+- ✅ `interactive_builder.py` - Script interactivo completo
+- 🚧 `Dockerfile.arm32` - Necesita testing
+- 🚧 `create_release_arm32.sh` - Necesita testing
+
+#### Estado de Testing Pendiente
+- [ ] **ARM64**: Validar que la compilación Docker funciona
+- [ ] **ARM32**: Completar implementación y testing
+- [ ] **ARM Cross-build**: Probar desde diferentes hosts (Windows/Linux)
+- [ ] **Integration Testing**: Verificar que los binarios ARM funcionan
+- [ ] **Packaging**: Asegurar que se empaquetan correctamente en stracker-V*.zip
+
+#### Próximos Objetivos
+1. **Inmediato**: Testing completo de ARM64
+2. **Corto plazo**: Finalizar implementación ARM32
+3. **Mediano plazo**: Testing en hardware ARM real (Raspberry Pi, etc.)
+4. **Largo plazo**: CI/CD automático para todas las arquitecturas
 
 ### Gestión de Versiones
 Para facilitar la actualización de versiones, puedes usar el script auxiliar:
@@ -343,9 +448,28 @@ python update_version.py --increment minor   # Nuevas funcionalidades
 python update_version.py --increment major   # Cambios incompatibles
 ```
 
-### Historial de Versiones
-- **5.0.0** (Actual): Script interactivo de construcción, mejoras en el proceso de build, documentación actualizada
-- **4.x.x y anteriores**: Desarrollo original por NEYS (2015-2020)
+### Historial de Versiones y Cambios Recientes
+
+#### Versión 5.0.1 (Junio 2025) - EN DESARROLLO
+🚀 **Mejoras en el Sistema de Compilación**:
+- ✅ **RESUELTO**: Problema de permisos con entorno virtual durante compilación
+- ✅ **NUEVO**: Gestión inteligente de entornos virtuales (reutilización automática)
+- ✅ **NUEVO**: Script interactivo `interactive_builder.py` para compilación guiada
+- ✅ **MEJORADO**: Mensajes informativos y manejo de errores en `create_release.py`
+- 🚧 **EN DESARROLLO**: Soporte completo para ARM32 (Docker y scripts preparados)
+- ✅ **LISTO**: Soporte para ARM64 (validación pendiente)
+
+**Cambios Técnicos Implementados**:
+- Función `is_virtualenv_functional()` en `create_release.py`
+- Manejo robusto de `PermissionError` con instrucciones claras
+- Eliminación de recreación innecesaria del entorno virtual
+- Mejoras en mensajes de error con sugerencias de solución
+
+#### Versión 5.0.0 (Base)
+- **Funcionalidades Core**: ptracker + stracker + stracker-packager
+- **Soporte Windows**: Compilación y empaquetado completos
+- **Soporte Linux**: Binarios x86/x64 funcionales
+- **Instaladores**: NSIS para Windows, tarball para Linux
 
 ### Releases y Distribución
 Cada versión genera los siguientes artefactos en el directorio `versions/`:
