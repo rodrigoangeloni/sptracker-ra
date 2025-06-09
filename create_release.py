@@ -24,7 +24,27 @@ import subprocess
 import sys
 import time
 
-exec(open("release_settings.py").read())
+# Import configuration from release_settings
+try:
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(__file__))
+    import release_settings as settings
+    
+    # Assign variables from the module
+    git = settings.git
+    ac_install_dir = settings.ac_install_dir
+    REMOTE_BUILD_CMD = getattr(settings, 'REMOTE_BUILD_CMD', None)
+    REMOTE_COPY_RESULT = getattr(settings, 'REMOTE_COPY_RESULT', None)
+    print("Configuration loaded successfully")
+    
+except (ImportError, AttributeError) as e:
+    print(f"Error loading configuration: {e}")
+    print("Using default values...")
+    git = "git"
+    ac_install_dir = r"C:\Program Files (x86)\Steam\steamapps\common\assettocorsa"
+    REMOTE_BUILD_CMD = None
+    REMOTE_COPY_RESULT = None
 
 test_release_process = False
 
@@ -34,6 +54,8 @@ build_ptracker = False
 build_stracker_windows = False
 build_stracker_linux = False
 build_stracker_packager = False
+build_stracker_arm32 = False
+build_stracker_arm64 = False
 
 if "--test_release_process" in sys.argv:
     sys.argv.remove("--test_release_process")
@@ -70,12 +92,25 @@ if "--windows_only" in sys.argv:
     windows_only = True
     test_release_process = True
 
+arm32_only = False
+if "--arm32_only" in sys.argv:
+    sys.argv.remove('--arm32_only')
+    arm32_only = True
+    test_release_process = True
+
+arm64_only = False
+if "--arm64_only" in sys.argv:
+    sys.argv.remove('--arm64_only')
+    arm64_only = True
+    test_release_process = True
+
 if ptracker_only or stracker_only or stracker_packager_only:
     if ptracker_only:
         build_ptracker = True
     if stracker_only:
         build_stracker_linux = True
         build_stracker_windows = True
+        build_stracker_arm32 = True
     if stracker_packager_only:
         build_stracker_packager = True
 else:
@@ -83,19 +118,35 @@ else:
     build_stracker_windows = True
     build_stracker_linux = True
     build_stracker_packager = True
+    build_stracker_arm32 = True
 
 if windows_only and linux_only:
     print("Error: --windows_only and --linux_only are mutually exclusive")
     sys.exit(1)
 if windows_only:
     build_stracker_linux = False
+    build_stracker_arm32 = False
 if linux_only:
     build_ptracker = False
     build_stracker_windows = False
     build_stracker_packager = False
+if arm32_only:
+    build_ptracker = False
+    build_stracker_windows = False
+    build_stracker_linux = False
+    build_stracker_packager = False
+    build_stracker_arm32 = True
+
+if arm64_only:
+    build_ptracker = False
+    build_stracker_windows = False
+    build_stracker_linux = False
+    build_stracker_packager = False
+    build_stracker_arm32 = False
+    build_stracker_arm64 = True
 
 if len(sys.argv) != 2:
-    print ("Usage: create_release [--test_release_process] [--ptracker_only] [--stracker_only] [--linux_only] [--windows_only] [--stracker_packager_only] <version_number>")
+    print ("Usage: create_release [--test_release_process] [--ptracker_only] [--stracker_only] [--linux_only] [--windows_only] [--arm32_only] [--arm64_only] [--stracker_packager_only] <version_number>")
     sys.exit(1)
 
 if not test_release_process:
@@ -108,10 +159,31 @@ if not test_release_process:
 version = sys.argv[1]
 
 # Create virtualenv in case it doesn't exist yet
-subprocess.run(["virtualenv", "env/windows"], check=True, universal_newlines=True)
+import os
+import shutil
+
+virtualenv_path = "env/windows"
+if os.path.exists(virtualenv_path):
+    print(f"Removing existing virtualenv at {virtualenv_path}")
+    try:
+        shutil.rmtree(virtualenv_path)
+    except PermissionError as e:
+        print(f"Error removing virtualenv: {e}")
+        print("Please close any applications using the virtual environment and try again.")
+        sys.exit(1)
+
+print(f"Creating new virtualenv at {virtualenv_path}")
+subprocess.run(["virtualenv", virtualenv_path], check=True, universal_newlines=True)
 
 # Use virtualenv
-exec(open("env/windows/Scripts/activate_this.py").read())
+activate_script = os.path.join(virtualenv_path, "Scripts", "activate_this.py")
+if os.path.exists(activate_script):
+    exec(open(activate_script).read())
+else:
+    print(f"Warning: activate_this.py not found at {activate_script}")
+    # Alternative activation method for newer virtualenv versions
+    import sys
+    sys.path.insert(0, os.path.join(virtualenv_path, "Lib", "site-packages"))
 
 if not linux_only:
     do_install = True
@@ -339,11 +411,11 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager:
         r.write("dist/stracker-packager.exe", "stracker-packager.exe")
 
     os.chdir("..")
-
+    
     r.write("stracker/README.txt", "README.txt")
     r.write("www/stracker_doc.htm", "stracker/documentation.htm")
     r.write("stracker/start-stracker.cmd", "start-stracker.cmd")
-
+    
     http_data = (glob.glob("stracker/http_static/bootstrap/*/*") +
                  glob.glob("stracker/http_static/img/*.png") +
                  glob.glob("stracker/http_static/jquery/*.js") +
@@ -353,7 +425,7 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager:
         tgt = src[len("stracker/"):]
         print("adding",src,"as",tgt)
         r.write(src, tgt)
-
+    
     if build_stracker_linux:
         print(REMOTE_BUILD_CMD)
         rbuild_out = subprocess.run(REMOTE_BUILD_CMD, check=True, universal_newlines=True)
@@ -361,3 +433,35 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager:
             rcopy_out = subprocess.run(REMOTE_COPY_RESULT, check=True, universal_newlines=True)
 
         r.write("stracker/stracker_linux_x86.tgz", "stracker_linux_x86.tgz")
+
+    if build_stracker_arm32:
+        print("------------------- Building stracker for ARM32 -------------------------")
+        # Use Docker to build ARM32 version
+        docker_cmd = ["docker", "build", "-f", "Dockerfile.arm32", "-t", "sptracker-arm32", "."]
+        print("Building Docker image for ARM32...")
+        subprocess.run(docker_cmd, check=True, universal_newlines=True)
+        
+        # Run the container to build ARM32 binary
+        run_cmd = ["docker", "run", "--rm", "-v", f"{os.getcwd()}/versions:/app/versions", "sptracker-arm32"]
+        print("Running ARM32 build in Docker...")
+        subprocess.run(run_cmd, check=True, universal_newlines=True)
+        
+        # Add ARM32 binary to the distribution
+        if os.path.exists("stracker/stracker_linux_arm32.tgz"):
+            r.write("stracker/stracker_linux_arm32.tgz", "stracker_linux_arm32.tgz")
+
+    if build_stracker_arm64:
+        print("------------------- Building stracker for ARM64 -------------------------")
+        # Use Docker to build ARM64 version
+        docker_cmd = ["docker", "build", "-f", "Dockerfile.arm64", "-t", "sptracker-arm64", "."]
+        print("Building Docker image for ARM64...")
+        subprocess.run(docker_cmd, check=True, universal_newlines=True)
+        
+        # Run the container to build ARM64 binary
+        run_cmd = ["docker", "run", "--rm", "-v", f"{os.getcwd()}/versions:/app/versions", "sptracker-arm64"]
+        print("Running ARM64 build in Docker...")
+        subprocess.run(run_cmd, check=True, universal_newlines=True)
+        
+        # Add ARM64 binary to the distribution
+        if os.path.exists("stracker/stracker_linux_arm64.tgz"):
+            r.write("stracker/stracker_linux_arm64.tgz", "stracker_linux_arm64.tgz")

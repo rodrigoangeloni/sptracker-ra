@@ -100,21 +100,23 @@ def get_os_filter_choice(component_choice):
     
     print("\n💻 FILTRO DE SISTEMA OPERATIVO")
     print("-" * 30)
-    print("1. 🌐 Por defecto (Windows + Linux donde aplique)")
+    print("1. 🌐 Por defecto (Windows + Linux + ARM donde aplique)")
     print("2. 🪟 Solo Windows")
     print("3. 🐧 Solo Linux")
+    print("4. 🤖 Solo ARM32")
+    print("5. 🦾 Solo ARM64")
     print()
     
     if component_choice == "1":
-        print("ℹ️  Nota: 'Solo Linux' compilará únicamente stracker para Linux")
+        print("ℹ️  Nota: 'Solo Linux', 'Solo ARM32' o 'Solo ARM64' compilarán únicamente stracker para esa plataforma")
     
     while True:
         try:
-            choice = input("Elige una opción de SO (1-3): ").strip()
-            if choice in ["1", "2", "3"]:
+            choice = input("Elige una opción de SO (1-5): ").strip()
+            if choice in ["1", "2", "3", "4", "5"]:
                 return choice
             else:
-                print("❌ Opción no válida. Elige entre 1 y 3.")
+                print("❌ Opción no válida. Elige entre 1 y 5.")
         except KeyboardInterrupt:
             print("\n\n👋 Saliendo del script...")
             sys.exit(0)
@@ -158,12 +160,15 @@ def build_command_args(version, component_choice, os_filter_choice, is_test_rele
     
     if component_choice in component_flags:
         args.append(component_flags[component_choice])
-    
-    # Agregar filtros de OS
+      # Agregar filtros de OS
     if os_filter_choice == "2":
         args.append("--windows_only")
     elif os_filter_choice == "3":
         args.append("--linux_only")
+    elif os_filter_choice == "4":
+        args.append("--arm32_only")
+    elif os_filter_choice == "5":
+        args.append("--arm64_only")
     
     # Agregar versión al final
     args.append(version)
@@ -183,12 +188,13 @@ def show_compilation_summary(args, component_choice, os_filter_choice):
         "4": "Solo stracker-packager"
     }
     print(f"🔨 Componentes: {component_names[component_choice]}")
-    
-    # Mostrar OS
+      # Mostrar OS
     os_names = {
-        "1": "Windows + Linux (donde aplique)",
+        "1": "Windows + Linux + ARM (donde aplique)",
         "2": "Solo Windows",
-        "3": "Solo Linux"
+        "3": "Solo Linux",
+        "4": "Solo ARM32",
+        "5": "Solo ARM64"
     }
     print(f"💻 Sistema: {os_names[os_filter_choice]}")
     
