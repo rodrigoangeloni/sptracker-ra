@@ -2,9 +2,9 @@
 
 [![Licencia](https://img.shields.io/badge/Licencia-GPL%20v3-blue.svg)](LICENSE.txt)
 [![Python](https://img.shields.io/badge/Python-3.8+-green.svg)](https://python.org)
-[![Plataforma](https://img.shields.io/badge/Plataforma-Windows%20%7C%20Linux-lightgrey.svg)](https://github.com/docwilco/sptracker)
+[![Plataforma](https://img.shields.io/badge/Plataforma-Windows%20%7C%20Linux%20%7C%20ARM-lightgrey.svg)](https://github.com/docwilco/sptracker)
 
-**sptracker** es una suite completa de aplicaciones para [Assetto Corsa](http://www.assettocorsa.net/) que incluye `ptracker` (rastreador personal) y `stracker` (rastreador de servidor). Esta herramienta proporciona análisis avanzado de rendimiento, estadísticas detalladas y funcionalidades mejoradas tanto para jugadores individuales como para administradores de servidores.
+**sptracker** es una suite completa de aplicaciones para [Assetto Corsa](http://www.assettocorsa.net/) que incluye `ptracker` (rastreador personal) y `stracker` (rastreador de servidor). Esta herramienta proporciona análisis avanzado de rendimiento, estadísticas detalladas y funcionalidades mejoradas tanto para jugadores individuales como para administradores de servidores. Con soporte nativo para arquitecturas x86, x64, ARM32 y ARM64.
 
 ## 📋 Tabla de Contenidos
 
@@ -26,10 +26,11 @@
 - **Análisis de rendimiento en tiempo real** - Tiempos de vuelta, deltas y comparaciones
 - **Interfaz gráfica avanzada** - Widgets personalizables con múltiples temas
 - **Estadísticas completas** - Base de datos de rendimiento y análisis histórico
-- **Soporte multiplataforma** - Windows y Linux
+- **Soporte multiplataforma** - Windows, Linux, ARM32 y ARM64
 - **Interfaz web** - Panel de control basado en navegador para servidores
 - **Comunicación cliente-servidor** - Protocolo de red optimizado
 - **Soporte de base de datos** - SQLite y PostgreSQL
+- **Compilación con Docker** - Soporte para arquitecturas ARM mediante contenedores
 
 ### Funcionalidades Específicas
 - Comparación de vueltas con ghost cars
@@ -61,6 +62,7 @@ Aplicación del lado del servidor para administradores de servidores de Assetto 
 
 ### Requisitos Mínimos
 - **Sistema Operativo**: Windows 10+ o Ubuntu 18.04+
+- **Arquitecturas Soportadas**: x86, x64, ARM32, ARM64
 - **Assetto Corsa**: Instalación completa del juego
 - **Python**: 3.8 o superior (solo para desarrollo)
 - **Memoria RAM**: 4GB mínimo, 8GB recomendado
@@ -70,16 +72,19 @@ Aplicación del lado del servidor para administradores de servidores de Assetto 
 - **Python**: 3.8+ con pip y virtualenv
 - **Git**: Para control de versiones
 - **NSIS**: 3.x para crear instaladores de Windows
+- **Docker**: Para compilación ARM32/ARM64 (opcional)
 - **Entorno Linux**: WSL2, VM o host remoto para compilación multiplataforma
 
 ## 🚀 Instalación
 
 ### Instalación para Usuarios
 1. Descarga la última versión desde la sección [Releases](https://github.com/docwilco/sptracker/releases)
-2. Ejecuta el instalador `ptracker-V[version].exe` para Windows
-3. Para servidores Linux, extrae `stracker_linux_x86.tgz`
-4. Sigue las instrucciones del instalador
-5. Configura Assetto Corsa para cargar el complemento
+2. **Para Windows**: Ejecuta el instalador `ptracker-V[version].exe`
+3. **Para Linux x86**: Extrae `stracker_linux_x86.tgz`
+4. **Para ARM32**: Extrae `stracker_linux_arm32.tgz`
+5. **Para ARM64**: Extrae `stracker_linux_arm64.tgz`
+6. Sigue las instrucciones del instalador
+7. Configura Assetto Corsa para cargar el complemento
 
 ### Instalación Rápida (Windows)
 ```powershell
@@ -115,13 +120,13 @@ python interactive_builder.py
 El script interactivo te guiará paso a paso a través de:
 - **Selección de versión**: Especifica la versión que quieres construir
 - **Opciones de construcción**: Elige qué componentes compilar (ptracker, stracker, o ambos)
-- **Configuración de plataforma**: Windows, Linux o ambas
+- **Configuración de plataforma**: Windows, Linux, ARM32, ARM64 o todas las arquitecturas
 - **Modo de prueba**: Opción para probar sin hacer commits git
 - **Información detallada**: Muestra información completa de todos los archivos generados
 
 ### Construcción Manual
 ```powershell
-# Construir todas las aplicaciones
+# Construir todas las aplicaciones (todas las arquitecturas)
 python create_release.py 5.0.0
 
 # Construir solo ptracker
@@ -129,6 +134,18 @@ python create_release.py --ptracker_only 5.1.0
 
 # Construir solo stracker
 python create_release.py --stracker_only 5.2.0
+
+# Construir solo para Windows
+python create_release.py --windows_only 5.0.0
+
+# Construir solo para Linux
+python create_release.py --linux_only 5.0.0
+
+# Construir solo para ARM32
+python create_release.py --arm32_only 5.0.0
+
+# Construir solo para ARM64
+python create_release.py --arm64_only 5.0.0
 
 # Modo de prueba (sin commit git)
 python create_release.py --test_release_process 5.0.0
@@ -141,6 +158,9 @@ Después de una construcción exitosa, encontrarás los siguientes archivos:
 - `ptracker-V[version].exe`: Instalador de Windows para ptracker (cliente)
 - `stracker-packager-V[version].exe`: Empaquetador standalone de stracker
 - `stracker-V[version].zip`: Paquete completo de stracker (servidor)
+  - Incluye `stracker_linux_x86.tgz`: Binario Linux x86
+  - Incluye `stracker_linux_arm32.tgz`: Binario Linux ARM32 (si se compiló)
+  - Incluye `stracker_linux_arm64.tgz`: Binario Linux ARM64 (si se compiló)
 
 **En el directorio `dist/`:**
 - `ptracker.exe`: Ejecutable de ptracker para desarrollo
@@ -155,7 +175,33 @@ Después de una construcción exitosa, encontrarás los siguientes archivos:
 - `--stracker_only`: Construir solo el servidor stracker
 - `--windows_only`: Solo versiones de Windows
 - `--linux_only`: Solo versiones de Linux
+- `--arm32_only`: Solo versión ARM 32 bits (requiere Docker)
+- `--arm64_only`: Solo versión ARM 64 bits (requiere Docker)
 - `--stracker_packager_only`: Solo el empaquetador de stracker
+
+### Compilación para Arquitecturas ARM
+
+Para compilar binarios ARM32 y ARM64, el proyecto utiliza Docker con compilación cruzada:
+
+```powershell
+# Instalar Docker Desktop (Windows) o Docker Engine (Linux)
+# Asegúrate de que Docker está ejecutándose
+
+# Compilar solo ARM32
+python create_release.py --arm32_only 5.0.0
+
+# Compilar solo ARM64  
+python create_release.py --arm64_only 5.0.0
+
+# Usar el script interactivo para seleccionar ARM
+python interactive_builder.py
+# Selecciona opción "4. 🤖 Solo ARM32" o "5. 🦾 Solo ARM64"
+```
+
+**Archivos Docker:**
+- `Dockerfile.arm32`: Configuración para compilación ARM 32 bits
+- `Dockerfile.arm64`: Configuración para compilación ARM 64 bits (existente)
+- `create_release_arm32.sh`: Script de build específico para ARM32
 
 ### Gestión de Versiones
 Para facilitar la actualización de versiones, puedes usar el script auxiliar:
@@ -183,8 +229,14 @@ python create_release.py 5.1.0
 
 ### Configuración de stracker (Servidor)
 ```bash
-# Ejecutar stracker en servidor Linux
+# Ejecutar stracker en servidor Linux x86
 ./stracker --help
+
+# Ejecutar stracker en ARM32
+./stracker_arm32 --help
+
+# Ejecutar stracker en ARM64
+./stracker_arm64 --help
 
 # Generar configuración por defecto
 ./stracker --stracker_ini stracker-default.ini
