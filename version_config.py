@@ -7,12 +7,12 @@ A partir de la versión 5.0.0, el proyecto sigue Semantic Versioning.
 """
 
 # Versión base del proyecto (para próximos releases)
-BASE_VERSION = "5.0.0"
+BASE_VERSION = "3.5.1"
 
-# Componentes de versión actual
-VERSION_MAJOR = 5
-VERSION_MINOR = 0
-VERSION_PATCH = 0
+# Componentes de versión actual (continuando desde DocWilco)
+VERSION_MAJOR = 3
+VERSION_MINOR = 5
+VERSION_PATCH = 2
 
 # Versión completa
 CURRENT_VERSION = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"

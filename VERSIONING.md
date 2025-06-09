@@ -1,26 +1,31 @@
 # Guía de Versionado para sptracker
 
 ## Introducción
-A partir de la versión 5.0.0, sptracker adopta un esquema de versionado semántico consistente para facilitar el desarrollo y la distribución.
+sptracker sigue el esquema de versionado histórico establecido por NEYS y continuado por DocWilco. La versión actual es 3.5.2, continuando desde la 3.5.1 de DocWilco.
 
 ## Estructura de Versiones
 
-### Formato: MAJOR.MINOR.PATCH (ej: 5.2.1)
+### Formato: MAJOR.MINOR.PATCH (ej: 3.5.2)
 
-- **MAJOR** (5.x.x): Cambios que rompen compatibilidad
-  - Cambios en protocolos de red
-  - Modificaciones en API públicas
+- **MAJOR** (3.x.x): Cambios principales en arquitectura o protocolo
+  - Cambios que rompen compatibilidad
   - Reestructuración significativa del código
   
-- **MINOR** (x.2.x): Nuevas funcionalidades compatibles
+- **MINOR** (x.5.x): Nuevas funcionalidades y mejoras
   - Nuevas características para usuarios
   - Mejoras en la interfaz
   - Nuevas opciones de configuración
   
-- **PATCH** (x.x.1): Correcciones y mejoras menores
+- **PATCH** (x.x.2): Correcciones y mejoras menores
   - Corrección de bugs
   - Optimizaciones de rendimiento
   - Mejoras en documentación
+
+## Historial de Mantenedores
+
+- **NEYS**: Versiones 2.x.x - 3.5.0 (Autor original)
+- **DocWilco**: Versión 3.5.1 (2021)
+- **rodrigoangeloni**: Versión 3.5.2+ (2025-actual)
 
 ## Proceso de Release
 
