@@ -156,14 +156,14 @@ if linux_only:
     build_stracker_windows32 = False
     build_stracker_packager = False
 if windows32_only:
-    build_ptracker = False
+    build_ptracker = True           # ✅ Habilitar ptracker para Windows 32-bit
     build_stracker_windows = False
     build_stracker_linux = False
     build_stracker_linux32 = False
-    build_stracker_packager = False
+    build_stracker_packager = True  # ✅ Habilitar stracker-packager para Windows 32-bit
     build_stracker_arm32 = False
     build_stracker_arm64 = False
-    build_stracker_windows32 = True
+    build_stracker_windows32 = True # ✅ Mantener stracker para Windows 32-bit
 if linux32_only:
     build_ptracker = False
     build_stracker_windows = False
@@ -469,7 +469,16 @@ if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or
     if os.path.exists('dist'):
         shutil.rmtree('dist')
 
-    r = zipfile.ZipFile("../versions/stracker-V%s.zip" % version, "w")
+    # Determine architecture-specific ZIP filename
+    if windows32_only:
+        zip_filename = f"../versions/stracker-v{version}-win32-complete.zip"
+    elif windows_only or (build_stracker_windows and not build_stracker_windows32):
+        zip_filename = f"../versions/stracker-v{version}-win64-complete.zip"
+    else:
+        # Default to old naming for compatibility
+        zip_filename = f"../versions/stracker-V{version}.zip"
+    
+    r = zipfile.ZipFile(zip_filename, "w")
 
     if build_stracker_windows:
         print("------------------- Building stracker.exe -------------------------------")
@@ -550,7 +559,6 @@ if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or
     r.write("stracker/README.txt", "README.txt")
     r.write("www/stracker_doc.htm", "stracker/documentation.htm")
     r.write("stracker/start-stracker.cmd", "start-stracker.cmd")
-    
     http_data = (glob.glob("stracker/http_static/bootstrap/*/*") +
                  glob.glob("stracker/http_static/img/*.png") +
                  glob.glob("stracker/http_static/jquery/*.js") +
@@ -562,12 +570,15 @@ if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or
         r.write(src, tgt)
     
     if build_stracker_linux:
-        print(REMOTE_BUILD_CMD)
-        rbuild_out = subprocess.run(REMOTE_BUILD_CMD, check=True, universal_newlines=True)
-        if not REMOTE_COPY_RESULT is None:
-            rcopy_out = subprocess.run(REMOTE_COPY_RESULT, check=True, universal_newlines=True)
-
-        r.write("stracker/stracker_linux_x86.tgz", "stracker_linux_x86.tgz")
+        if REMOTE_BUILD_CMD is not None:
+            print("Executing remote build command:", REMOTE_BUILD_CMD)
+            rbuild_out = subprocess.run(REMOTE_BUILD_CMD, check=True, universal_newlines=True)
+            if REMOTE_COPY_RESULT is not None:
+                rcopy_out = subprocess.run(REMOTE_COPY_RESULT, check=True, universal_newlines=True)
+            r.write("stracker/stracker_linux_x86.tgz", "stracker_linux_x86.tgz")
+        else:
+            print("⚠️  Warning: REMOTE_BUILD_CMD not configured. Skipping Linux build.")
+            print("💡 Configure REMOTE_BUILD_CMD in release_settings.py for Linux compilation.")
 
     if build_stracker_linux32:
         print("------------------- Building stracker for Linux 32-bit -------------------------")
@@ -714,11 +725,11 @@ cd ..
         
         # Add ARM64 binary to the distribution
         if os.path.exists("stracker/stracker_linux_arm64.tgz"):
-            r.write("stracker/stracker_linux_arm64.tgz", "stracker_linux_arm64.tgz")
-
-    # Close the stracker zip file
+            r.write("stracker/stracker_linux_arm64.tgz", "stracker_linux_arm64.tgz")    # Close the stracker zip file
     r.close()
-    print(f"Stracker distribution created: versions/stracker-V{version}.zip")
+    # Get the filename from the zip filename path
+    zip_name = os.path.basename(zip_filename)
+    print(f"Stracker distribution created: versions/{zip_name}")
 
 # Final success message
 print("=" * 80)
@@ -729,7 +740,14 @@ if build_ptracker:
     print(f"✅ ptracker: versions/ptracker-V{version}.exe")
 
 if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or build_stracker_linux32 or build_stracker_packager or build_stracker_arm32 or build_stracker_arm64:
-    print(f"✅ stracker: versions/stracker-V{version}.zip")
+    # Show the actual ZIP filename created
+    if windows32_only:
+        zip_display_name = f"stracker-v{version}-win32-complete.zip"
+    elif windows_only or (build_stracker_windows and not build_stracker_windows32):
+        zip_display_name = f"stracker-v{version}-win64-complete.zip"
+    else:
+        zip_display_name = f"stracker-V{version}.zip"
+    print(f"✅ stracker: versions/{zip_display_name}")
 
 print("=" * 80)
 

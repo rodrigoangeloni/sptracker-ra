@@ -28,6 +28,18 @@ set SCRIPT_NAME=🚀 BUILD COMPLETE SPTRACKER 🚀
 set TOTAL_STEPS=7
 set CURRENT_STEP=0
 
+REM Variables de control de compilación
+set COMPILED_PTRACKER=0
+set COMPILED_STRACKER_64=0
+set COMPILED_STRACKER_32=0
+set COMPILED_PACKAGER=0
+
+REM Variables para diferenciar arquitecturas de compilación
+set COMPILED_PTRACKER_32=0
+set COMPILED_PTRACKER_64=0
+set COMPILED_PACKAGER_32=0
+set COMPILED_PACKAGER_64=0
+
 echo.
 echo =============================================================================
 echo %SCRIPT_NAME%
@@ -208,11 +220,14 @@ REM ============================================================================
 
 :COMPILE_WINDOWS_64_FULL
 echo ⏳ Compilando Windows 64-bit completo (ptracker + stracker + stracker-packager)...
-python create_release.py --test_release_process %VERSION%
+python create_release.py --windows_only --test_release_process %VERSION%
 if errorlevel 1 (
     echo ❌ Error en compilación Windows 64-bit completo
     goto ERROR
 )
+set COMPILED_PTRACKER_64=1
+set COMPILED_STRACKER_64=1
+set COMPILED_PACKAGER_64=1
 echo ✅ Windows 64-bit completo terminado
 exit /b 0
 
@@ -223,6 +238,9 @@ if errorlevel 1 (
     echo ❌ Error en compilación Windows 32-bit completo
     goto ERROR
 )
+set COMPILED_PTRACKER_32=1
+set COMPILED_STRACKER_32=1
+set COMPILED_PACKAGER_32=1
 echo ✅ Windows 32-bit completo terminado
 exit /b 0
 
@@ -233,6 +251,7 @@ if errorlevel 1 (
     echo ❌ Error en compilación stracker Windows 64-bit
     goto ERROR
 )
+set COMPILED_STRACKER_64=1
 echo ✅ Solo stracker Windows 64-bit terminado
 exit /b 0
 
@@ -243,6 +262,7 @@ if errorlevel 1 (
     echo ❌ Error en compilación stracker Windows 32-bit
     goto ERROR
 )
+set COMPILED_STRACKER_32=1
 echo ✅ Solo stracker Windows 32-bit terminado
 exit /b 0
 
@@ -332,55 +352,48 @@ echo    ARM:     componente-v%VERSION%-arm32/arm64.tgz
 echo.
 
 REM =============================================================================
-REM WINDOWS BINARIOS INDIVIDUALES
+REM VERIFICAR ARCHIVOS PRINCIPALES GENERADOS
 REM =============================================================================
-echo 🪟 Organizando binarios Windows...
+echo 📦 Verificando archivos principales Windows...
 
-REM Windows 64-bit binarios
-if exist "dist\ptracker.exe" (
-    copy "dist\ptracker.exe" "versions\ptracker-v%VERSION%-win64-standalone.exe" >nul 2>&1
-    echo    ✅ ptracker-v%VERSION%-win64-standalone.exe
-)
-if exist "stracker\dist\stracker.exe" (
-    copy "stracker\dist\stracker.exe" "versions\stracker-v%VERSION%-win64-standalone.exe" >nul 2>&1
-    echo    ✅ stracker-v%VERSION%-win64-standalone.exe
-)
-if exist "stracker\dist\stracker-packager.exe" (
-    copy "stracker\dist\stracker-packager.exe" "versions\stracker-packager-v%VERSION%-win64-standalone.exe" >nul 2>&1
-    echo    ✅ stracker-packager-v%VERSION%-win64-standalone.exe
-)
-
-REM Windows 32-bit binarios  
-if exist "stracker\dist\stracker_win32.exe" (
-    copy "stracker\dist\stracker_win32.exe" "versions\stracker-v%VERSION%-win32-standalone.exe" >nul 2>&1
-    echo    ✅ stracker-v%VERSION%-win32-standalone.exe
-)
-
-REM =============================================================================
-REM INSTALADORES WINDOWS (Renombrar si es necesario)
-REM =============================================================================
-echo 📦 Verificando instaladores Windows...
-
-REM Renombrar instaladores existentes para seguir estándar
+REM Renombrar instalador ptracker para nomenclatura estándar con arquitectura
 if exist "versions\ptracker-V%VERSION%.exe" (
-    if not exist "versions\ptracker-v%VERSION%-win64-installer.exe" (
-        move "versions\ptracker-V%VERSION%.exe" "versions\ptracker-v%VERSION%-win64-installer.exe" >nul 2>&1
+    REM Determinar arquitectura basada en qué se compiló
+    if %COMPILED_PTRACKER_64%==1 (
+        if not exist "versions\ptracker-v%VERSION%-win64-installer.exe" (
+            move "versions\ptracker-V%VERSION%.exe" "versions\ptracker-v%VERSION%-win64-installer.exe" >nul 2>&1
+        )
+        echo    ✅ ptracker-v%VERSION%-win64-installer.exe
+    ) else if %COMPILED_PTRACKER_32%==1 (
+        if not exist "versions\ptracker-v%VERSION%-win32-installer.exe" (
+            move "versions\ptracker-V%VERSION%.exe" "versions\ptracker-v%VERSION%-win32-installer.exe" >nul 2>&1
+        )
+        echo    ✅ ptracker-v%VERSION%-win32-installer.exe
+    ) else (
+        REM Fallback - renombrar sin arquitectura específica si no está claro
+        if not exist "versions\ptracker-v%VERSION%-installer.exe" (
+            move "versions\ptracker-V%VERSION%.exe" "versions\ptracker-v%VERSION%-installer.exe" >nul 2>&1
+        )
+        echo    ✅ ptracker-v%VERSION%-installer.exe
     )
-    echo    ✅ ptracker-v%VERSION%-win64-installer.exe
 )
 
-if exist "versions\stracker-V%VERSION%.zip" (
-    if not exist "versions\stracker-v%VERSION%-win64-complete.zip" (
-        move "versions\stracker-V%VERSION%.zip" "versions\stracker-v%VERSION%-win64-complete.zip" >nul 2>&1
-    )
+REM Verificar archivos stracker (ya tienen nomenclatura correcta)
+if exist "versions\stracker-v%VERSION%-win32-complete.zip" (
+    echo    ✅ stracker-v%VERSION%-win32-complete.zip
+)
+if exist "versions\stracker-v%VERSION%-win64-complete.zip" (
     echo    ✅ stracker-v%VERSION%-win64-complete.zip
 )
 
-if exist "versions\stracker-packager-V%VERSION%.exe" (
-    if not exist "versions\stracker-packager-v%VERSION%-win64-installer.exe" (
-        move "versions\stracker-packager-V%VERSION%.exe" "versions\stracker-packager-v%VERSION%-win64-installer.exe" >nul 2>&1
+REM Solo renombrar stracker antiguo si no existe ningún archivo nuevo
+if exist "versions\stracker-V%VERSION%.zip" (
+    if not exist "versions\stracker-v%VERSION%-win64-complete.zip" (
+        if not exist "versions\stracker-v%VERSION%-win32-complete.zip" (
+            move "versions\stracker-V%VERSION%.zip" "versions\stracker-v%VERSION%-complete.zip" >nul 2>&1
+            echo    ✅ stracker-v%VERSION%-complete.zip (renombrado por compatibilidad)
+        )
     )
-    echo    ✅ stracker-packager-v%VERSION%-win64-installer.exe
 )
 
 REM =============================================================================
@@ -462,12 +475,11 @@ echo 📦 RESUMEN DE ARCHIVOS GENERADOS (nomenclatura estandarizada):
 echo.
 
 if exist versions\ (
-    echo 🪟 WINDOWS (ptracker + stracker + stracker-packager):
-    echo    📦 INSTALADORES:
-    for %%f in (versions\*-v%VERSION%-win*-installer.exe) do echo       ✅ %%~nxf
-    for %%f in (versions\*-v%VERSION%-win-complete.zip) do echo       ✅ %%~nxf
-    echo    🔧 BINARIOS STANDALONE:
-    for %%f in (versions\*-v%VERSION%-win*-standalone.exe) do echo       ✅ %%~nxf
+    echo 🪟 WINDOWS:
+    echo    📦 INSTALADORES Y PAQUETES:
+    for %%f in (versions\ptracker-v%VERSION%-installer.exe) do echo       ✅ %%~nxf
+    for %%f in (versions\stracker-v%VERSION%-win*-complete.zip) do echo       ✅ %%~nxf
+    for %%f in (versions\stracker-v%VERSION%-complete.zip) do echo       ✅ %%~nxf
     echo.
     
     echo 🐧 LINUX (solo stracker):
@@ -478,42 +490,27 @@ if exist versions\ (
     for %%f in (versions\stracker-v%VERSION%-arm*.tgz) do echo       ✅ %%~nxf
     echo.
     
-    echo 📊 ESTADISTICAS:
-    echo    📂 Directorio: versions\    for /f %%i in ('dir versions\*-v%VERSION%-* /b 2^>nul ^| find /c /v ""') do set FILE_COUNT=%%i
-    echo    📄 Archivos generados: %FILE_COUNT%
-      echo.
-    echo 💾 TAMAÑOS:
-    for %%f in (versions\*-v%VERSION%-*) do echo       📄 %%~nf: %%~zf bytes
-    
 ) else (
     echo ❌ Directorio versions/ no existe o está vacío
 )
 
 echo.
 echo 🎯 DISTRIBUCIÓN RECOMENDADA:
-echo    🏎️  Usuarios finales: ptracker-v%VERSION%-win64-installer.exe
-echo    🖥️  Servidores: stracker-v%VERSION%-win64-complete.zip (paquete Windows 64-bit)
-echo    📦 Administradores: stracker-packager-v%VERSION%-win64-installer.exe
-echo    🐧 Linux: stracker-v%VERSION%-linux64.tgz / stracker-v%VERSION%-linux32.tgz
-echo    🤖 ARM: stracker-v%VERSION%-arm64.tgz / stracker-v%VERSION%-arm32.tgz
+echo    🏎️  Usuarios finales: ptracker-v%VERSION%-installer.exe
+echo    🖥️  Servidores Windows: stracker-v%VERSION%-win*-complete.zip
+echo    🐧 Servidores Linux: stracker-v%VERSION%-linux*.tgz
+echo    🤖 Servidores ARM: stracker-v%VERSION%-arm*.tgz
 echo.
-echo ⚙️  ARQUITECTURAS COMPILADAS:
-echo    ✅ Windows 32-bit: stracker standalone
-echo    ✅ Windows 64-bit: ptracker + stracker + stracker-packager (standalone + instaladores)
-echo    ✅ Linux 32-bit: stracker
-echo    ✅ Linux 64-bit: stracker  
-echo    ✅ ARM 32-bit: stracker
-echo    ✅ ARM 64-bit: stracker
+echo ⚙️  COMPONENTES INCLUIDOS:
+echo    📦 ptracker-installer.exe: App completa para Assetto Corsa (instalador NSIS)
+echo    📦 stracker-complete.zip: Servidor + packager + documentación + scripts
 echo.
-echo 📝 NOMENCLATURA ESTANDARIZADA:
-echo    📌 Formato: componente-v[VERSION]-[ARQUITECTURA]-[TIPO].extensión
-echo    📌 Ejemplos:
-echo       • ptracker-v%VERSION%-win64-installer.exe
-echo       • stracker-v%VERSION%-linux64.tgz  
-echo       • stracker-v%VERSION%-arm32.tgz
-echo       • stracker-packager-v%VERSION%-win64-standalone.exe
+echo 📝 NOMENCLATURA SIMPLIFICADA:
+echo    📌 ptracker-v[VERSION]-[ARCH]-installer.exe (instalador completo)
+echo    📌 stracker-v[VERSION]-[ARCH]-complete.zip (paquete servidor)
+echo    📌 stracker-v[VERSION]-[ARCH].tgz (Linux/ARM)
 echo.
-echo 🎉 ¡COMPILACION MULTIPLATAFORMA COMPLETA CON NOMENCLATURA CLARA!
+echo 🎉 ¡COMPILACION SIMPLIFICADA - SOLO ARCHIVOS NECESARIOS!
 echo.
 goto END
 
