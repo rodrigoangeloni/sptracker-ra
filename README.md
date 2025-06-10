@@ -152,28 +152,28 @@ El script interactivo te guiará paso a paso a través de:
 ### Construcción Manual
 ```powershell
 # Construir todas las aplicaciones (todas las arquitecturas)
-python create_release.py 5.0.0
+python create_release.py 3.6.0
 
 # Construir solo ptracker
-python create_release.py --ptracker_only 5.1.0
+python create_release.py --ptracker_only 3.6.0
 
 # Construir solo stracker
-python create_release.py --stracker_only 5.2.0
+python create_release.py --stracker_only 3.6.0
 
 # Construir solo para Windows
-python create_release.py --windows_only 5.0.0
+python create_release.py --windows_only 3.6.0
 
 # Construir solo para Linux
-python create_release.py --linux_only 5.0.0
+python create_release.py --linux_only 3.6.0
 
 # Construir solo para ARM32
-python create_release.py --arm32_only 5.0.0
+python create_release.py --arm32_only 3.6.0
 
 # Construir solo para ARM64
-python create_release.py --arm64_only 5.0.0
+python create_release.py --arm64_only 3.6.0
 
 # Modo de prueba (sin commit git)
-python create_release.py --test_release_process 5.0.0
+python create_release.py --test_release_process 3.6.0
 ```
 
 ### Archivos Generados
@@ -213,10 +213,10 @@ Después de una construcción exitosa, encontrarás los siguientes archivos:
 # Asegúrate de que Docker está ejecutándose
 
 # Compilar solo ARM32 (DISPONIBLE)
-python create_release.py --arm32_only 5.0.0
+python create_release.py --arm32_only 3.6.0
 
 # Compilar solo ARM64 (COMPLETADO - 9 de junio de 2025)
-python create_release.py --arm64_only 5.0.0
+python create_release.py --arm64_only 3.6.0
 
 # Usar el script interactivo para seleccionar ARM
 python interactive_builder.py
@@ -276,7 +276,7 @@ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 #### Paso 4: Testing ARM64 (Ya Preparado)
 ```powershell
 # Probar compilación ARM64
-python create_release.py --arm64_only --test_release_process 0.0.1
+python create_release.py --arm64_only --test_release_process 3.5.3
 ```
 
 #### Paso 5: Desarrollar ARM32 (Objetivo Principal)
@@ -285,7 +285,7 @@ python create_release.py --arm64_only --test_release_process 0.0.1
 docker build -f Dockerfile.arm32 -t sptracker-arm32 .
 
 # Testing del script de build ARM32
-python create_release.py --arm32_only --test_release_process 0.0.1
+python create_release.py --arm32_only --test_release_process 3.5.3
 ```
 
 #### Archivos Clave Modificados (Ya Pusheados)
@@ -313,15 +313,15 @@ Para facilitar la actualización de versiones, puedes usar el script auxiliar:
 
 ```powershell
 # Actualizar a una versión específica
-python update_version.py 5.1.0
+python update_version.py 3.6.0
 
 # Incrementar automáticamente la versión
-python update_version.py --increment patch  # 5.0.0 → 5.0.1
-python update_version.py --increment minor  # 5.0.0 → 5.1.0
-python update_version.py --increment major  # 5.0.0 → 6.0.0
+python update_version.py --increment patch  # 3.5.2 → 3.5.3
+python update_version.py --increment minor  # 3.5.2 → 3.6.0
+python update_version.py --increment major  # 3.5.2 → 4.0.0
 
 # Luego construir el release
-python create_release.py 5.1.0
+python create_release.py 3.6.0
 ```
 
 ## 📖 Uso
@@ -416,19 +416,19 @@ sptracker/
 - Mantener compatibilidad con Python 3.8+
 
 ### Esquema de Versionado
-El proyecto utiliza [Semantic Versioning](https://semver.org/) a partir de la versión **5.0.0**:
-- **MAJOR** (5.x.x): Cambios incompatibles en la API o arquitectura
+El proyecto utiliza [Semantic Versioning](https://semver.org/) continuando desde la versión **3.5.2**:
+- **MAJOR** (3.x.x): Cambios incompatibles en la API o arquitectura
 - **MINOR** (x.Y.x): Nuevas funcionalidades manteniendo compatibilidad
 - **PATCH** (x.x.Z): Correcciones de bugs y mejoras menores
 
-**Nota**: Las versiones anteriores a 5.0.0 corresponden al desarrollo original de NEYS. La nueva numeración (5.0.0+) marca el inicio del mantenimiento comunitario y las mejoras significativas del proyecto.
+**Nota**: El proyecto continúa el versionado histórico establecido por NEYS (hasta 3.5.0) y DocWilco (3.5.1), actualmente en versión 3.5.2 bajo mantenimiento de rodrigoangeloni.
 
 ## 🏷️ Versionado
 
 ### Esquema de Versiones
-A partir de la versión **5.0.0**, sptracker utiliza [Semantic Versioning](https://semver.org/):
+El proyecto utiliza [Semantic Versioning](https://semver.org/) continuando desde la versión **3.5.2**:
 
-- **5.x.x** - Versión principal (cambios incompatibles)
+- **3.x.x** - Versión principal (cambios incompatibles)
 - **x.Y.x** - Versión menor (nuevas funcionalidades compatibles)
 - **x.x.Z** - Versión de parche (correcciones de bugs)
 
@@ -440,7 +440,7 @@ El proyecto incluye herramientas para facilitar la gestión de versiones:
 python -c "from version_config import get_version; print(get_version())"
 
 # Actualizar versión manualmente
-python update_version.py 5.2.0
+python update_version.py 3.6.0
 
 # Incrementar versión automáticamente
 python update_version.py --increment patch   # Correcciones
@@ -450,7 +450,7 @@ python update_version.py --increment major   # Cambios incompatibles
 
 ### Historial de Versiones y Cambios Recientes
 
-#### Versión 5.0.1 (Junio 2025) - EN DESARROLLO
+#### Versión 3.5.2 (Junio 2025) - EN DESARROLLO
 🚀 **Mejoras en el Sistema de Compilación**:
 - ✅ **RESUELTO**: Problema de permisos con entorno virtual durante compilación
 - ✅ **NUEVO**: Gestión inteligente de entornos virtuales (reutilización automática)
@@ -465,11 +465,21 @@ python update_version.py --increment major   # Cambios incompatibles
 - Eliminación de recreación innecesaria del entorno virtual
 - Mejoras en mensajes de error con sugerencias de solución
 
-#### Versión 5.0.0 (Base)
+#### Versión 3.5.1 (Mayo 2021) - DocWilco
+- **Líneas de división de sectores**: Visualización de sectores en mapas de circuito
+- **Gráficos mejorados**: Integración con Highcharts para mejor rendimiento
+- **Zoom sincronizado**: Funcionalidad de zoom con rueda del ratón en mapas
+- **Reemplazo de PyGal**: Migración a Highcharts para mejor rendimiento de gráficos
+- **Velocidad de compilación**: Optimizaciones en scripts de construcción
+- **Detección de instalación AC**: Mejor detección del directorio de instalación de Assetto Corsa
+
+#### Versión 3.5.0 (Mayo 2018) - NEYS
 - **Funcionalidades Core**: ptracker + stracker + stracker-packager
 - **Soporte Windows**: Compilación y empaquetado completos
 - **Soporte Linux**: Binarios x86/x64 funcionales
 - **Instaladores**: NSIS para Windows, tarball para Linux
+- **Anonimización GDPR**: Cumplimiento con GDPR mediante anonimización de Steam IDs
+- **Historial de chat**: Tabla ChatHistory en base de datos (esquema v24)
 
 ### Releases y Distribución
 Cada versión genera los siguientes artefactos en el directorio `versions/`:

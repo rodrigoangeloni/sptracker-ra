@@ -4,7 +4,7 @@ Registro completo de cambios del proyecto **sptracker** - Suite de aplicaciones 
 
 ## Formato
 
-Este changelog sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y utiliza [Semantic Versioning](https://semver.org/lang/es/) a partir de la versión 5.0.0.
+Este changelog sigue las convenciones de [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y utiliza [Semantic Versioning](https://semver.org/lang/es/) continuando desde la versión 3.5.2.
 
 **Tipos de cambios:**
 - `Added` - Nuevas funcionalidades
@@ -16,7 +16,7 @@ Este changelog sigue las convenciones de [Keep a Changelog](https://keepachangel
 
 ---
 
-## [3.5.2] - 2025-06-09 (EN DESARROLLO) - rodrigoangeloni
+## [3.5.2] - 2025-06-10 (EN DESARROLLO) - rodrigoangeloni
 
 ### Added
 - 🚀 **Gestión inteligente de entornos virtuales**: Reutilización automática de entornos existentes funcionales
@@ -42,6 +42,7 @@ Este changelog sigue las convenciones de [Keep a Changelog](https://keepachangel
 - ✅ **Problema de permisos**: Resuelto error "Acceso denegado" al eliminar entorno virtual en Windows
 - 🔒 **Conflictos con IDEs**: Gestión de archivos bloqueados por VS Code y otros editores
 - 🔧 **Compilación multiplataforma**: Estrategia optimizada Windows nativo + WSL nativo + Docker ARM
+- 📋 **Versionado correcto**: Corregida documentación para usar versión 3.5.2 en lugar de 5.x.x incorrecta
 
 ### Technical Details
 - **Archivos modificados**: `create_release.py`, `README.md`, `ptracker_lib/__init__.py`, `stracker/stracker_lib/__init__.py`
@@ -295,9 +296,9 @@ Las versiones anteriores incluían desarrollo fundamental de:
 ## Mantenedores
 
 ### Histórico
-- **NEYS (Original)**: Desarrollo principal hasta versión 3.5.x
-- **DocWilco (2021)**: Mantenimiento y mejoras (versión 3.5.1-drwilco4)
-- **rodrigoangeloni (2025-actual)**: Mantenimiento actual y transición a 5.x.x
+- **NEYS (Original)**: Desarrollo principal hasta versión 3.5.0
+- **DocWilco (2021)**: Mantenimiento y mejoras (versión 3.5.1)
+- **rodrigoangeloni (2025-actual)**: Mantenimiento actual continuando desde 3.5.2
 
 ### Contribuciones Especiales
 - **@Laurent81**: Iconos de ayudas actualizados
