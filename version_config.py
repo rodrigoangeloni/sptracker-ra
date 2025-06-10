@@ -3,7 +3,7 @@
 Configuración de versiones para sptracker
 
 Este archivo centraliza la configuración de versiones del proyecto.
-A partir de la versión 5.0.0, el proyecto sigue Semantic Versioning.
+A partir de la versión 3.5.2, el proyecto sigue Semantic Versioning.
 """
 
 # Versión base del proyecto (para próximos releases)

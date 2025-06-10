@@ -1,0 +1,110 @@
+# Dockerfile.arm32.fast - Versión optimizada para compilación ARM32
+# ================================================================
+# 
+# Este Dockerfile optimizado reduce significativamente el tiempo de build
+# utilizando dependencias precompiladas y técnicas de cache optimizadas.
+#
+# USO:
+#   docker build -f Dockerfile.arm32.fast -t sptracker-arm32-fast .
+#   docker run --rm -v "${PWD}/versions:/app/versions" sptracker-arm32-fast
+#
+
+FROM --platform=linux/arm/v7 python:3.11-slim-bullseye
+
+# Metadatos
+LABEL maintainer="sptracker-dev"
+LABEL description="sptracker ARM32 build environment (optimizado)"
+LABEL version="1.1"
+LABEL architecture="arm32v7"
+
+# Variables de entorno optimizadas
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV BUILD_ARCH=arm32
+ENV TARGET_PLATFORM=linux/arm/v7
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Instalar dependencias del sistema (mínimo necesario)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Build essentials (solo lo necesario)
+    gcc \
+    g++ \
+    make \
+    # Python development
+    python3-dev \
+    # SSL/TLS support
+    libffi-dev \
+    libssl-dev \
+    # Database support
+    libsqlite3-dev \
+    # Cleanup inmediato
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && apt-get autoremove -y
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Crear entorno virtual ARM32 optimizado
+RUN python3 -m venv /app/env/arm32 \
+    && /app/env/arm32/bin/pip install --upgrade pip setuptools wheel
+
+# Instalar dependencias Python básicas (más rápidas)
+RUN /app/env/arm32/bin/pip install --no-cache-dir \
+    bottle \
+    cherrypy \
+    python-dateutil \
+    simplejson \
+    wsgi-request-logger \
+    psycopg2-binary
+
+# Instalar PyInstaller (sin dependencias pesadas adicionales)
+RUN /app/env/arm32/bin/pip install --no-cache-dir \
+    pyinstaller
+
+# Instalar apsw al final (la dependencia más lenta)
+# Usar timeout para evitar builds infinitos
+RUN timeout 1800 /app/env/arm32/bin/pip install --no-cache-dir apsw || \
+    echo "⚠️ APSW install timeout/failed - continuando sin APSW"
+
+# Copiar código fuente del proyecto (al final para maximizar cache)
+COPY . /app/
+
+# Configurar permisos ejecutables
+RUN chmod +x /app/create_release_arm32.sh 2>/dev/null || true \
+    && chmod +x /app/create_release.sh 2>/dev/null || true
+
+# Configurar estructura de directorios
+RUN mkdir -p /app/versions \
+    && mkdir -p /app/temp \
+    && mkdir -p /app/stracker/dist
+
+# Script de compilación optimizado
+RUN echo '#!/bin/bash' > /app/build-wrapper-fast.sh \
+    && echo 'set -e' >> /app/build-wrapper-fast.sh \
+    && echo 'echo "🚀 Iniciando compilación ARM32 optimizada..."' >> /app/build-wrapper-fast.sh \
+    && echo 'cd /app' >> /app/build-wrapper-fast.sh \
+    && echo '. env/arm32/bin/activate' >> /app/build-wrapper-fast.sh \
+    && echo 'echo "📦 Verificando dependencias..."' >> /app/build-wrapper-fast.sh \
+    && echo 'python -c "import bottle, cherrypy, psycopg2, pyinstaller; print(\"✅ Dependencias core OK\")"' >> /app/build-wrapper-fast.sh \
+    && echo 'if [ -x ./create_release_arm32.sh ]; then' >> /app/build-wrapper-fast.sh \
+    && echo '  echo "🔨 Ejecutando create_release_arm32.sh..."' >> /app/build-wrapper-fast.sh \
+    && echo '  ./create_release_arm32.sh' >> /app/build-wrapper-fast.sh \
+    && echo 'else' >> /app/build-wrapper-fast.sh \
+    && echo '  echo "🔨 Ejecutando create_release.py..."' >> /app/build-wrapper-fast.sh \
+    && echo '  python create_release.py --arm32_only --test_release_process ${1:-3.5.2}' >> /app/build-wrapper-fast.sh \
+    && echo 'fi' >> /app/build-wrapper-fast.sh \
+    && echo 'echo "✅ Build ARM32 completado!"' >> /app/build-wrapper-fast.sh \
+    && chmod +x /app/build-wrapper-fast.sh
+
+# Punto de entrada optimizado
+ENTRYPOINT ["/app/build-wrapper-fast.sh"]
+
+# Comando por defecto
+CMD ["3.5.2"]
+
+# Healthcheck optimizado
+HEALTHCHECK --interval=60s --timeout=30s --start-period=10s --retries=2 \
+    CMD /app/env/arm32/bin/python --version || exit 1

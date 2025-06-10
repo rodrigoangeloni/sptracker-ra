@@ -6,8 +6,13 @@ set -e  # Exit on any error
 echo "=== SPTracker ARM32 Build Script ==="
 echo "Starting ARM32 build in Docker..."
 
-# Activate virtual environment
-source env/arm32/bin/activate
+# Verificar que estamos en el directorio correcto
+echo "Current directory: $(pwd)"
+echo "Python version: $(python3 --version)"
+echo "Architecture: $(uname -m)"
+
+# NO activar env local - Docker ya tiene el entorno configurado
+# El entorno virtual se maneja en el Dockerfile
 
 # Build stracker for ARM32
 echo "Building stracker for ARM32..."
@@ -42,6 +47,9 @@ echo "ARM32 build completed successfully!"
 echo "Generated: stracker/stracker_linux_arm32.tgz"
 
 # Copy results to host
+echo "Copying stracker_linux_arm32.tgz to /app/versions/"
 cp stracker_linux_arm32.tgz /app/versions/
+echo "Files in /app/versions/:"
+ls -la /app/versions/
 
 cd ..

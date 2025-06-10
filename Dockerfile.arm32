@@ -1,38 +1,121 @@
-# Dockerfile for ARM32 builds
+# Dockerfile para compilación sptracker ARM32
+# ==========================================
+# 
+# Este Dockerfile compila sptracker para arquitectura ARM 32-bit
+# usando una imagen base optimizada y un entorno estandarizado.
+#
+# USO:
+#   docker build -f Dockerfile.arm32 -t sptracker-arm32 .
+#   docker run --rm -v "${PWD}/versions:/app/versions" sptracker-arm32
+#
+
 FROM --platform=linux/arm/v7 python:3.11-slim-bullseye
 
-# Install system dependencies
+# Metadatos
+LABEL maintainer="sptracker-dev"
+LABEL description="sptracker ARM32 build environment"
+LABEL version="1.0"
+LABEL architecture="arm32v7"
+
+# Variables de entorno
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV BUILD_ARCH=arm32
+ENV TARGET_PLATFORM=linux/arm/v7
+
+# Instalar dependencias del sistema (optimizado para ARM32)
 RUN apt-get update && apt-get install -y \
+    # Build essentials
     gcc \
     g++ \
     make \
     pkg-config \
+    # Python development
+    python3-dev \
+    # SSL/TLS support
     libffi-dev \
     libssl-dev \
+    # Compression
     zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libbz2-dev \
+    # Database support
+    libsqlite3-dev \
+    postgresql-client \
+    libpq-dev \
+    # Utilities
+    curl \
+    git \
+    tar \
+    gzip \
+    # Cleanup
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && apt-get autoremove -y
 
-# Set working directory
+# Crear directorio de trabajo
 WORKDIR /app
 
-# Copy source code
-COPY . /app
+# Copiar archivos de configuración si existen
+# (No hay requirements.txt en este proyecto)
 
-# Create virtual environment and install dependencies
-RUN python3 -m venv env/arm32
-RUN env/arm32/bin/pip install --upgrade pip
-RUN env/arm32/bin/pip install \
+# Crear entorno virtual ARM32 optimizado
+RUN python3 -m venv /app/env/arm32 \
+    && /app/env/arm32/bin/pip install --upgrade pip setuptools wheel \
+    && /app/env/arm32/bin/pip cache purge
+
+# Instalar dependencias Python (usando ruedas precompiladas cuando sea posible)
+RUN /app/env/arm32/bin/pip install --no-cache-dir \
+    # Core dependencies (rápidas)
     bottle \
     cherrypy \
     python-dateutil \
-    wsgi-request-logger \
     simplejson \
-    pyinstaller \
+    # Web server
+    wsgi-request-logger \
+    # Database (usar binary wheel cuando esté disponible)
     psycopg2-binary \
-    apsw
+    # Build tools (al final por su tamaño y tiempo)
+    pyinstaller
 
-# Build script
-RUN chmod +x /app/create_release_arm32.sh
+# Instalar apsw por separado (dependencia pesada que requiere compilación)
+RUN /app/env/arm32/bin/pip install --no-cache-dir \
+    --only-binary=:none: \
+    apsw || \
+    /app/env/arm32/bin/pip install --no-cache-dir apsw
 
-# Set entrypoint
-ENTRYPOINT ["/app/create_release_arm32.sh"]
+# Copiar código fuente del proyecto
+COPY . /app/
+
+# Configurar permisos ejecutables
+RUN chmod +x /app/create_release_arm32.sh \
+    && chmod +x /app/create_release.sh
+
+# Configurar permisos y estructura
+RUN mkdir -p /app/versions \
+    && mkdir -p /app/temp \
+    && mkdir -p /app/stracker/dist
+
+# Configurar el entorno de compilación
+RUN echo "#!/bin/bash" > /app/build-wrapper.sh \
+    && echo "set -e" >> /app/build-wrapper.sh \
+    && echo "echo '🏗️  Iniciando compilación ARM32...'" >> /app/build-wrapper.sh \
+    && echo "cd /app" >> /app/build-wrapper.sh \
+    && echo ". env/arm32/bin/activate" >> /app/build-wrapper.sh \
+    && echo "if [ -x ./create_release_arm32.sh ]; then" >> /app/build-wrapper.sh \
+    && echo "  ./create_release_arm32.sh" >> /app/build-wrapper.sh \
+    && echo "else" >> /app/build-wrapper.sh \
+    && echo "  echo '⚠️  create_release_arm32.sh no encontrado, usando create_release.py'" >> /app/build-wrapper.sh \
+    && echo "  python create_release.py --arm32_only --test_release_process \${1:-3.5.2}" >> /app/build-wrapper.sh \
+    && echo "fi" >> /app/build-wrapper.sh \
+    && chmod +x /app/build-wrapper.sh
+
+# Punto de entrada optimizado
+ENTRYPOINT ["/app/build-wrapper.sh"]
+
+# Comando por defecto
+CMD ["3.5.2"]
+
+# Healthcheck para verificar el estado del contenedor
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD /app/env/arm32/bin/python --version && echo "ARM32 build environment ready" || exit 1

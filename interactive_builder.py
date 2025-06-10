@@ -51,7 +51,7 @@ def get_version_input():
     """Obtiene el número de versión del usuario."""
     print("📋 INFORMACIÓN DE VERSIÓN")
     print("-" * 25)
-    print("Formatos válidos: X.Y.Z (ejemplo: 5.1.0)")
+    print("Formatos válidos: X.Y.Z (ejemplo: 3.5.3)")
     print()
     
     while True:
@@ -66,7 +66,7 @@ def get_version_input():
             if len(parts) == 3 and all(part.isdigit() for part in parts):
                 return version
             else:
-                print("❌ Formato incorrecto. Usa el formato X.Y.Z (ejemplo: 5.1.0)")
+                print("❌ Formato incorrecto. Usa el formato X.Y.Z (ejemplo: 3.5.3)")
         except KeyboardInterrupt:
             print("\n\n👋 Saliendo del script...")
             sys.exit(0)
@@ -98,25 +98,32 @@ def get_os_filter_choice(component_choice):
     if component_choice not in ["1", "3"]:  # Solo para "Todo" o "Solo stracker"
         return "1"  # Por defecto
     
-    print("\n💻 FILTRO DE SISTEMA OPERATIVO")
-    print("-" * 30)
-    print("1. 🌐 Por defecto (Windows + Linux + ARM donde aplique)")
-    print("2. 🪟 Solo Windows")
-    print("3. 🐧 Solo Linux")
-    print("4. 🤖 Solo ARM32")
-    print("5. 🦾 Solo ARM64")
+    print("\n💻 FILTRO DE SISTEMA OPERATIVO Y ARQUITECTURA")
+    print("-" * 45)
+    print("1. 🌐 Por defecto (Windows 64-bit + Linux 64-bit + ARM donde aplique)")
+    print("2. 🪟 Solo Windows 64-bit (nativo)")
+    print("3. 🪟 Solo Windows 32-bit (nativo, experimental)")
+    print("4. 🐧 Solo Linux 64-bit (WSL nativo)")
+    print("5. 🐧 Solo Linux 32-bit (WSL nativo, experimental)")
+    print("6. 🤖 Solo ARM32 (Docker Desktop + QEMU)")
+    print("7. 🦾 Solo ARM64 (Docker Desktop + QEMU)")
+    print("8. 🔧 Compilación completa (todas las arquitecturas)")
     print()
     
     if component_choice == "1":
-        print("ℹ️  Nota: 'Solo Linux', 'Solo ARM32' o 'Solo ARM64' compilarán únicamente stracker para esa plataforma")
+        print("ℹ️  Estrategia de compilación optimizada:")
+        print("   🪟 Windows: Compilación nativa")
+        print("   🐧 Linux: WSL nativo (sin Docker)")
+        print("   🤖 ARM: Docker Desktop con emulación QEMU")
+        print("⚠️  Las opciones de 32-bit son experimentales")
     
     while True:
         try:
-            choice = input("Elige una opción de SO (1-5): ").strip()
-            if choice in ["1", "2", "3", "4", "5"]:
+            choice = input("Elige una opción de SO/arquitectura (1-8): ").strip()
+            if choice in ["1", "2", "3", "4", "5", "6", "7", "8"]:
                 return choice
             else:
-                print("❌ Opción no válida. Elige entre 1 y 5.")
+                print("❌ Opción no válida. Elige entre 1 y 8.")
         except KeyboardInterrupt:
             print("\n\n👋 Saliendo del script...")
             sys.exit(0)
@@ -160,15 +167,22 @@ def build_command_args(version, component_choice, os_filter_choice, is_test_rele
     
     if component_choice in component_flags:
         args.append(component_flags[component_choice])
-      # Agregar filtros de OS
+    
+    # Agregar filtros de OS y arquitectura
     if os_filter_choice == "2":
         args.append("--windows_only")
     elif os_filter_choice == "3":
-        args.append("--linux_only")
+        args.append("--windows32_only")
     elif os_filter_choice == "4":
-        args.append("--arm32_only")
+        args.append("--linux_only")
     elif os_filter_choice == "5":
+        args.append("--linux32_only")
+    elif os_filter_choice == "6":
+        args.append("--arm32_only")
+    elif os_filter_choice == "7":
         args.append("--arm64_only")
+    elif os_filter_choice == "8":
+        args.append("--all_architectures")
     
     # Agregar versión al final
     args.append(version)
@@ -188,13 +202,17 @@ def show_compilation_summary(args, component_choice, os_filter_choice):
         "4": "Solo stracker-packager"
     }
     print(f"🔨 Componentes: {component_names[component_choice]}")
-      # Mostrar OS
+    
+    # Mostrar OS
     os_names = {
-        "1": "Windows + Linux + ARM (donde aplique)",
-        "2": "Solo Windows",
-        "3": "Solo Linux",
-        "4": "Solo ARM32",
-        "5": "Solo ARM64"
+        "1": "Windows 64-bit + Linux 64-bit + ARM (donde aplique)",
+        "2": "Solo Windows 64-bit",
+        "3": "Solo Windows 32-bit (experimental)",
+        "4": "Solo Linux 64-bit",
+        "5": "Solo Linux 32-bit (experimental)",
+        "6": "Solo ARM32",
+        "7": "Solo ARM64",
+        "8": "Todas las arquitecturas"
     }
     print(f"💻 Sistema: {os_names[os_filter_choice]}")
     
@@ -327,6 +345,21 @@ def show_generated_files_info(script_dir):
                     print(f"   👥 Para: Administradores de servidores")
                     print(f"   📝 Uso: Descomprimir y ejecutar stracker.exe en el servidor")
                     print()
+                elif file_path.suffix in [".tgz", ".tar.gz"]:
+                    arch_info = ""
+                    if "arm32" in file_path.name:
+                        arch_info = " (ARM 32-bit)"
+                    elif "arm64" in file_path.name:
+                        arch_info = " (ARM 64-bit)"
+                    elif "x86" in file_path.name:
+                        arch_info = " (Linux x86)"
+                    
+                    print(f"🐧 {file_path.name} ({size_mb:.1f} MB){arch_info}")
+                    print(f"   📁 Ubicación: {file_path}")
+                    print(f"   🎯 Propósito: Binario stracker para Linux")
+                    print(f"   👥 Para: Administradores de servidores Linux")
+                    print(f"   📝 Uso: Extraer y ejecutar ./stracker")
+                    print()
     
     # Ejecutables individuales
     print("🔧 EJECUTABLES INDIVIDUALES:")
@@ -366,7 +399,8 @@ def show_generated_files_info(script_dir):
             print(f"   👥 Para: Administradores que gestionan contenido")
             print(f"   📝 Uso: Subir información de nuevos coches/pistas al servidor")
             print()
-      # Guía de uso
+    
+    # Guía de uso
     print("📚 GUÍA DE USO:")
     print("-" * 40)
     print("🎮 Para usuarios finales:")
@@ -383,6 +417,7 @@ def show_generated_files_info(script_dir):
     print("   🏎️  ptracker-V*.exe - Cliente para Assetto Corsa")
     print("   🖥️  stracker-V*.zip - Servidor completo")
     print("   📦 stracker-packager-V*.exe - Empaquetador standalone")
+    print("   🐧 stracker_linux_*.tgz - Binarios Linux específicos")
     print()
 
 def main():
@@ -419,7 +454,7 @@ def main():
             
             if success:
                 # Copiar stracker-packager.exe a versions/ si es necesario
-                if component_choice == "4" or (component_choice == "1" and os_filter_choice == "1"):
+                if component_choice == "4" or (component_choice == "1" and os_filter_choice in ["1", "8"]):
                     copy_packager_to_versions(Path(__file__).parent, version)
                 
                 print("\n🎉 ¡Proceso completado exitosamente!")

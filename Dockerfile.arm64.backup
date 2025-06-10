@@ -30,6 +30,15 @@ ENV TARGET_PLATFORM=$TARGETPLATFORM
 ENV PIP_NO_BUILD_ISOLATION=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
+# Variables de entorno
+ENV DEBIAN_FRONTEND=noninteractive
+ENV APP_HOME=/app
+ENV PYTHONUNBUFFERED=1
+ENV TARGET_PLATFORM=$TARGETPLATFORM
+# Asegúrate de que PIP_TARGET usa una ruta que existe y es escribable
+ENV PIP_TARGET=/app/vendor 
+ENV PATH="/app/vendor/bin:${PATH}"
+
 # Establecer el directorio de trabajo
 WORKDIR ${APP_HOME}
 

@@ -2,7 +2,8 @@
 /release_settings.py
 
 # create_release.py output
-/versions
+/versions/*
+!/versions/.gitkeep
 stracker/stracker_linux_x86.tgz
 nsis_temp_files0
 ptracker-server-dist.py

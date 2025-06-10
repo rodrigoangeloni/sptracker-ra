@@ -1,0 +1,3 @@
+# Este archivo mantiene el directorio versions/ en el repositorio
+# Los archivos de distribución generados serán ignorados por .gitignore
+# pero el directorio permanecerá para organizar las releases

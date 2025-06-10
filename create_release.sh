@@ -20,7 +20,7 @@ if [ ! -d "env/linux" ]; then
 fi
 
 # Activate virtual environment
-source env/linux/bin/activate
+. env/linux/bin/activate
 
 # Install/upgrade packages
 echo "Installing Python packages..."

@@ -1,0 +1,234 @@
+# Docker Compose para ARM32/ARM64 sptracker
+# ==========================================
+#
+# Este archivo define servicios Docker SOLO para arquitecturas ARM
+# que requieren emulación QEMU.
+#
+# COMPILACIÓN:
+# - Windows: Nativo en Windows con Python/PyInstaller
+# - Linux x64/x86: Nativo en WSL con Python/PyInstaller  
+# - ARM32/ARM64: Docker con emulación QEMU (este archivo)
+#
+# USO:
+#   docker-compose up build-arm64        # Compilar ARM64
+#   docker-compose up build-arm32        # Compilar ARM32  
+#   docker-compose up dev-environment    # Entorno de desarrollo
+#
+
+version: '3.8'
+
+# ==========================================================
+# CONFIGURACIÓN DE VOLÚMENES
+# ==========================================================
+volumes:
+  # Cache de pip para acelerar rebuilds
+  pip-cache:
+    driver: local
+  # Cache de Docker buildx
+  buildx-cache:
+    driver: local
+
+# ==========================================================
+# CONFIGURACIÓN DE REDES
+# ==========================================================
+networks:
+  sptracker-dev:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ==========================================================
+# SERVICIOS
+# ==========================================================
+services:
+
+  # ----------------------------------------------------------
+  # Compilación ARM64
+  # ----------------------------------------------------------
+  build-arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile.arm64
+      platforms:
+        - linux/arm64
+      cache_from:
+        - sptracker-arm64:latest
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-arm64
+    image: sptracker-arm64:latest
+    container_name: sptracker-build-arm64
+    volumes:
+      - ./versions:/app/versions
+      - ./temp:/app/temp
+      - pip-cache:/root/.cache/pip
+    environment:
+      - BUILD_VERSION=${BUILD_VERSION:-3.5.2}
+      - BUILD_MODE=${BUILD_MODE:-development}
+      - PYTHONUNBUFFERED=1
+    command: ["${BUILD_VERSION:-3.5.2}"]
+    networks:
+      - sptracker-dev
+    labels:
+      - "sptracker.service=build"
+      - "sptracker.architecture=arm64"
+
+  # ----------------------------------------------------------
+  # Compilación ARM32 
+  # ----------------------------------------------------------
+  build-arm32:
+    build:
+      context: .
+      dockerfile: Dockerfile.arm32
+      platforms:
+        - linux/arm/v7
+      cache_from:
+        - sptracker-arm32:latest
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-arm32
+    image: sptracker-arm32:latest
+    container_name: sptracker-build-arm32
+    volumes:
+      - ./versions:/app/versions
+      - ./temp:/app/temp
+      - pip-cache:/root/.cache/pip
+    environment:
+      - BUILD_VERSION=${BUILD_VERSION:-3.5.2}
+      - BUILD_MODE=${BUILD_MODE:-development}
+      - PYTHONUNBUFFERED=1
+    command: ["${BUILD_VERSION:-3.5.2}"]
+    networks:
+      - sptracker-dev
+    labels:
+      - "sptracker.service=build"
+      - "sptracker.architecture=arm32"
+
+  # ----------------------------------------------------------
+  # Compilación Linux x86_64 (para comparación)
+  # ----------------------------------------------------------
+  build-linux:
+    build:
+      context: .
+      dockerfile: Dockerfile.linux
+      platforms:
+        - linux/amd64
+    image: sptracker-linux:latest
+    container_name: sptracker-build-linux
+    volumes:
+      - ./versions:/app/versions
+      - ./temp:/app/temp
+      - pip-cache:/root/.cache/pip
+    environment:
+      - BUILD_VERSION=${BUILD_VERSION:-3.5.2}
+      - BUILD_MODE=${BUILD_MODE:-development}
+      - PYTHONUNBUFFERED=1
+    command: ["${BUILD_VERSION:-3.5.2}"]
+    networks:
+      - sptracker-dev
+    labels:
+      - "sptracker.service=build"
+      - "sptracker.architecture=x86_64"
+
+  # ----------------------------------------------------------
+  # Entorno de Desarrollo Interactivo
+  # ----------------------------------------------------------
+  dev-environment:
+    image: python:3.11-slim-bullseye
+    container_name: sptracker-dev-env
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ./env:/workspace/env
+      - pip-cache:/root/.cache/pip
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - TERM=xterm-256color
+    command: |
+      bash -c "
+        echo '🏗️  Configurando entorno de desarrollo...'
+        apt-get update -qq
+        apt-get install -y -qq git curl tree nano vim
+        python -m pip install --upgrade pip virtualenv
+        if [ ! -d env/docker ]; then
+          python -m venv env/docker
+          env/docker/bin/pip install --upgrade pip
+          env/docker/bin/pip install bottle cherrypy python-dateutil wsgi-request-logger simplejson pyinstaller psycopg2-binary apsw
+        fi
+        echo '✅ Entorno listo. Comandos disponibles:'
+        echo '  python interactive_builder.py'
+        echo '  python create_release.py --test_release_process 3.5.2'
+        echo '  ./dev-build-linux.sh (si está en WSL)'
+        bash
+      "
+    stdin_open: true
+    tty: true
+    networks:
+      - sptracker-dev
+    labels:
+      - "sptracker.service=development"
+
+  # ----------------------------------------------------------
+  # Testing Multi-arquitectura
+  # ----------------------------------------------------------
+  test-multiarch:
+    image: tonistiigi/binfmt:latest
+    container_name: sptracker-multiarch-setup
+    privileged: true
+    command: --install all
+    labels:
+      - "sptracker.service=testing"
+
+  # ----------------------------------------------------------
+  # Servicio de Monitoreo de Builds
+  # ----------------------------------------------------------
+  build-monitor:
+    image: nginx:alpine
+    container_name: sptracker-build-monitor
+    ports:
+      - "8080:80"
+    volumes:
+      - ./versions:/usr/share/nginx/html/versions:ro
+      - ./temp:/usr/share/nginx/html/temp:ro
+      - ./logs:/usr/share/nginx/html/logs:ro
+    environment:
+      - NGINX_PORT=80
+    command: |
+      sh -c "
+        echo 'server {
+          listen 80;
+          location / {
+            root /usr/share/nginx/html;
+            autoindex on;
+            autoindex_exact_size off;
+            autoindex_localtime on;
+          }
+          location /health {
+            return 200 \"Build monitor healthy\";
+            add_header Content-Type text/plain;
+          }
+        }' > /etc/nginx/conf.d/default.conf
+        nginx -g 'daemon off;'
+      "
+    networks:
+      - sptracker-dev
+    labels:
+      - "sptracker.service=monitoring"
+
+# ==========================================================
+# CONFIGURACIÓN DE DESARROLLO ADICIONAL
+# ==========================================================
+
+# Variables de entorno para desarrollo
+x-development-environment: &development-env
+  BUILD_MODE: development
+  DEBUG: "true"
+  PYTHONUNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+
+# Configuración común de volúmenes
+x-common-volumes: &common-volumes
+  - ./versions:/app/versions
+  - ./temp:/app/temp
+  - ./logs:/app/logs
+  - pip-cache:/root/.cache/pip

@@ -1,4 +1,3 @@
-
 # This file is part of sptracker.
 #
 #    sptracker is free software: you can redistribute it and/or modify
@@ -16,10 +15,12 @@
 
 import zipfile
 import glob
+import hashlib
 import os
 import os.path
 import pathlib
 import shutil
+import struct
 import subprocess
 import sys
 import time
@@ -52,7 +53,9 @@ test_release_process = False
 # OS on the others for now.
 build_ptracker = False
 build_stracker_windows = False
+build_stracker_windows32 = False
 build_stracker_linux = False
+build_stracker_linux32 = False
 build_stracker_packager = False
 build_stracker_arm32 = False
 build_stracker_arm64 = False
@@ -104,6 +107,23 @@ if "--arm64_only" in sys.argv:
     arm64_only = True
     test_release_process = True
 
+windows32_only = False
+if "--windows32_only" in sys.argv:
+    sys.argv.remove('--windows32_only')
+    windows32_only = True
+    test_release_process = True
+
+linux32_only = False
+if "--linux32_only" in sys.argv:
+    sys.argv.remove('--linux32_only')
+    linux32_only = True
+    test_release_process = True
+
+all_architectures = False
+if "--all_architectures" in sys.argv:
+    sys.argv.remove('--all_architectures')
+    all_architectures = True
+
 if ptracker_only or stracker_only or stracker_packager_only:
     if ptracker_only:
         build_ptracker = True
@@ -111,6 +131,7 @@ if ptracker_only or stracker_only or stracker_packager_only:
         build_stracker_linux = True
         build_stracker_windows = True
         build_stracker_arm32 = True
+        build_stracker_arm64 = True
     if stracker_packager_only:
         build_stracker_packager = True
 else:
@@ -119,34 +140,71 @@ else:
     build_stracker_linux = True
     build_stracker_packager = True
     build_stracker_arm32 = True
+    build_stracker_arm64 = True
 
 if windows_only and linux_only:
     print("Error: --windows_only and --linux_only are mutually exclusive")
     sys.exit(1)
 if windows_only:
     build_stracker_linux = False
+    build_stracker_linux32 = False
     build_stracker_arm32 = False
+    build_stracker_arm64 = False
 if linux_only:
     build_ptracker = False
     build_stracker_windows = False
+    build_stracker_windows32 = False
     build_stracker_packager = False
-if arm32_only:
+if windows32_only:
     build_ptracker = False
     build_stracker_windows = False
     build_stracker_linux = False
+    build_stracker_linux32 = False
+    build_stracker_packager = False
+    build_stracker_arm32 = False
+    build_stracker_arm64 = False
+    build_stracker_windows32 = True
+if linux32_only:
+    build_ptracker = False
+    build_stracker_windows = False
+    build_stracker_windows32 = False
+    build_stracker_linux = False
+    build_stracker_packager = False
+    build_stracker_arm32 = False
+    build_stracker_arm64 = False
+    build_stracker_linux32 = True
+if arm32_only:
+    build_ptracker = False
+    build_stracker_windows = False
+    build_stracker_windows32 = False
+    build_stracker_linux = False
+    build_stracker_linux32 = False
     build_stracker_packager = False
     build_stracker_arm32 = True
+    build_stracker_arm64 = False
 
 if arm64_only:
     build_ptracker = False
     build_stracker_windows = False
+    build_stracker_windows32 = False
     build_stracker_linux = False
+    build_stracker_linux32 = False
     build_stracker_packager = False
     build_stracker_arm32 = False
     build_stracker_arm64 = True
 
+if all_architectures:
+    build_ptracker = True
+    build_stracker_windows = True
+    build_stracker_windows32 = True
+    build_stracker_linux = True
+    build_stracker_linux32 = True
+    build_stracker_packager = True
+    build_stracker_arm32 = True
+    build_stracker_arm64 = True
+
 if len(sys.argv) != 2:
-    print ("Usage: create_release [--test_release_process] [--ptracker_only] [--stracker_only] [--linux_only] [--windows_only] [--arm32_only] [--arm64_only] [--stracker_packager_only] <version_number>")
+    print ("Usage: create_release [--test_release_process] [--ptracker_only] [--stracker_only] [--linux_only] [--windows_only] [--windows32_only] [--linux32_only] [--arm32_only] [--arm64_only] [--all_architectures] [--stracker_packager_only] <version_number>")
     sys.exit(1)
 
 if not test_release_process:
@@ -405,7 +463,7 @@ ptracker_lib/stdlib64/CreateFileHook.dll""".split("\n")
 #if os.path.exists("build"):
 #    shutil.rmtree("build")
 
-if build_stracker_windows or build_stracker_linux or build_stracker_packager:
+if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or build_stracker_linux32 or build_stracker_packager or build_stracker_arm32 or build_stracker_arm64:
 
     os.chdir("stracker")
     if os.path.exists('dist'):
@@ -427,6 +485,60 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager:
         assert(os.path.isfile('stracker-default.ini'))
         r.write("dist/stracker.exe", "stracker.exe")
         r.write("stracker-default.ini", "stracker-default.ini")
+
+    if build_stracker_windows32:
+        print("------------------- Building stracker.exe (Windows 32-bit) ----------------------")
+        # Create 32-bit virtualenv if it doesn't exist
+        virtualenv_path_32 = "../env/windows32"
+        
+        def is_virtualenv_functional_32(venv_path):
+            """Check if the 32-bit virtual environment exists and is functional."""
+            if not os.path.exists(venv_path):
+                return False
+            python_exe = os.path.join(venv_path, "Scripts", "python.exe")
+            pip_exe = os.path.join(venv_path, "Scripts", "pip.exe")
+            pyvenv_cfg = os.path.join(venv_path, "pyvenv.cfg")
+            return all(os.path.exists(f) for f in [python_exe, pip_exe, pyvenv_cfg])
+
+        if is_virtualenv_functional_32(virtualenv_path_32):
+            print(f"Using existing 32-bit virtualenv at {virtualenv_path_32}")
+        else:
+            if os.path.exists(virtualenv_path_32):
+                print(f"Removing corrupted 32-bit virtualenv at {virtualenv_path_32}")
+                shutil.rmtree(virtualenv_path_32)
+            
+            print(f"Creating new 32-bit virtualenv at {virtualenv_path_32}")
+            # Note: This requires a 32-bit Python installation
+            subprocess.run(["virtualenv", virtualenv_path_32], check=True, universal_newlines=True)
+            
+            # Install packages for 32-bit environment
+            print("Installing packages for 32-bit environment...")
+            subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "bottle"], check=True, universal_newlines=True)
+            subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "cherrypy"], check=True, universal_newlines=True)
+            subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "psycopg2"], check=True, universal_newlines=True)
+            subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "python-dateutil"], check=True, universal_newlines=True)
+            subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "wsgi-request-logger"], check=True, universal_newlines=True)
+            subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "simplejson"], check=True, universal_newlines=True)
+            subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "pyinstaller"], check=True, universal_newlines=True)
+            subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "apsw"], check=True, universal_newlines=True)
+        
+        # Build with 32-bit PyInstaller
+        subprocess.run([f"{virtualenv_path_32}/Scripts/pyinstaller.exe", "--name", "stracker_win32",
+                        "--clean", "-y", "--onefile", "--exclude-module", "http_templates",
+                        "--hidden-import", "cherrypy.wsgiserver.wsgiserver3",
+                        "--hidden-import", "psycopg2", "--path", "..", "--path", "externals",
+                        "stracker.py"],
+                       check=True, universal_newlines=True)
+        
+        # Generate default config for 32-bit version
+        if os.path.exists('stracker-default-win32.ini'):
+            os.remove('stracker-default-win32.ini')
+        subprocess.run([r"dist\stracker_win32.exe", "--stracker_ini", "stracker-default-win32.ini"], universal_newlines=True)
+        assert(os.path.isfile('stracker-default-win32.ini'))
+        
+        # Add to archive with specific names
+        r.write("dist/stracker_win32.exe", "stracker_win32.exe")
+        r.write("stracker-default-win32.ini", "stracker-default-win32.ini")
 
     if build_stracker_packager:
         print("------------------- Building stracker-packager.exe ----------------------")
@@ -456,6 +568,121 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager:
             rcopy_out = subprocess.run(REMOTE_COPY_RESULT, check=True, universal_newlines=True)
 
         r.write("stracker/stracker_linux_x86.tgz", "stracker_linux_x86.tgz")
+
+    if build_stracker_linux32:
+        print("------------------- Building stracker for Linux 32-bit -------------------------")
+        # Create Linux 32-bit build using Docker with 32-bit base image
+        dockerfile_content = """
+FROM i386/python:3.11-slim
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \\
+    gcc \\
+    g++ \\
+    libffi-dev \\
+    libssl-dev \\
+    zlib1g-dev \\
+    libbz2-dev \\
+    libreadline-dev \\
+    libsqlite3-dev \\
+    curl \\
+    git \\
+    postgresql-client \\
+    libpq-dev \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create working directory
+WORKDIR /app
+
+# Copy source code
+COPY . /app/
+
+# Create virtual environment
+RUN python -m venv env/linux32
+RUN env/linux32/bin/pip install --upgrade pip
+
+# Install Python packages
+RUN env/linux32/bin/pip install bottle cherrypy python-dateutil wsgi-request-logger simplejson pyinstaller psycopg2-binary apsw
+
+# Build script
+COPY create_release_linux32.sh /app/
+RUN chmod +x /app/create_release_linux32.sh
+
+# Run build
+CMD ["/app/create_release_linux32.sh"]
+"""
+        
+        # Write Dockerfile for Linux 32-bit
+        with open("Dockerfile.linux32", "w") as f:
+            f.write(dockerfile_content)
+        
+        # Create build script for Linux 32-bit
+        build_script_content = """#!/bin/bash
+set -e
+
+echo "=== SPTracker Linux 32-bit Build Script ==="
+echo "Starting Linux 32-bit build..."
+
+# Activate virtual environment
+source env/linux32/bin/activate
+
+# Build stracker for Linux 32-bit
+echo "Building stracker for Linux 32-bit..."
+cd stracker
+
+# Clean previous builds
+rm -rf dist build
+
+# Build with PyInstaller
+pyinstaller --name stracker_linux32 \\
+    --clean -y --onefile \\
+    --exclude-module http_templates \\
+    --hidden-import cherrypy.wsgiserver.wsgiserver3 \\
+    --hidden-import psycopg2 \\
+    --path .. \\
+    --path externals \\
+    stracker.py
+
+# Generate default config
+if [ -f "stracker-default-linux32.ini" ]; then
+    rm stracker-default-linux32.ini
+fi
+
+# Run stracker to generate default config (will fail but create config)
+./dist/stracker_linux32 --stracker_ini stracker-default-linux32.ini || true
+
+# Create tarball
+echo "Creating Linux 32-bit distribution tarball..."
+tar -czf stracker_linux_x86_32.tgz -C dist stracker_linux32
+
+echo "Linux 32-bit build completed successfully!"
+echo "Generated: stracker/stracker_linux_x86_32.tgz"
+
+# Copy results to host
+cp stracker_linux_x86_32.tgz /app/versions/ || true
+
+cd ..
+"""
+        
+        with open("create_release_linux32.sh", "w") as f:
+            f.write(build_script_content)
+        
+        # Make script executable
+        os.chmod("create_release_linux32.sh", 0o755)
+        
+        # Build Docker image for Linux 32-bit
+        docker_cmd = ["docker", "build", "-f", "Dockerfile.linux32", "-t", "sptracker-linux32", "."]
+        print("Building Docker image for Linux 32-bit...")
+        subprocess.run(docker_cmd, check=True, universal_newlines=True)
+        
+        # Run the container to build Linux 32-bit binary
+        run_cmd = ["docker", "run", "--rm", "-v", f"{os.getcwd()}/versions:/app/versions", "sptracker-linux32"]
+        print("Running Linux 32-bit build in Docker...")
+        subprocess.run(run_cmd, check=True, universal_newlines=True)
+        
+        # Add Linux 32-bit binary to the distribution
+        if os.path.exists("stracker/stracker_linux_x86_32.tgz"):
+            r.write("stracker/stracker_linux_x86_32.tgz", "stracker_linux_x86_32.tgz")
 
     if build_stracker_arm32:
         print("------------------- Building stracker for ARM32 -------------------------")
@@ -488,3 +715,31 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager:
         # Add ARM64 binary to the distribution
         if os.path.exists("stracker/stracker_linux_arm64.tgz"):
             r.write("stracker/stracker_linux_arm64.tgz", "stracker_linux_arm64.tgz")
+
+    # Close the stracker zip file
+    r.close()
+    print(f"Stracker distribution created: versions/stracker-V{version}.zip")
+
+# Final success message
+print("=" * 80)
+print("🎉 RELEASE BUILD COMPLETED SUCCESSFULLY! 🎉")
+print("=" * 80)
+
+if build_ptracker:
+    print(f"✅ ptracker: versions/ptracker-V{version}.exe")
+
+if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or build_stracker_linux32 or build_stracker_packager or build_stracker_arm32 or build_stracker_arm64:
+    print(f"✅ stracker: versions/stracker-V{version}.zip")
+
+print("=" * 80)
+
+if not test_release_process:
+    print("🔄 Creating git tag...")
+    try:
+        subprocess.run([git, "tag", f"v{version}"], check=True, universal_newlines=True)
+        print(f"✅ Git tag v{version} created successfully")
+        print("📤 Don't forget to push the tag: git push origin --tags")
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️  Warning: Could not create git tag: {e}")
+
+print(f"🚀 Release v{version} is ready for distribution!")

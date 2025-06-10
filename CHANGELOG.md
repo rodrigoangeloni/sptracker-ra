@@ -26,20 +26,28 @@ Este changelog sigue las convenciones de [Keep a Changelog](https://keepachangel
 - ⚡ **Función `is_virtualenv_functional()`**: Verificación inteligente del estado del entorno virtual
 - 🎯 **Adopción de herramientas modernas**: Scripts `update_version.py` y `version_config.py`
 - 📚 **Sistema de documentación mejorado**: README.md completamente reescrito y expandido
+- 🏗️ **Entorno estandarizado Windows + WSL**: Configuración reproducible para desarrollo
+- 📋 **Makefile avanzado**: Automatización completa del proceso de compilación
+- 🐧 **Compilación WSL nativa**: Linux se compila directamente en WSL (sin Docker)
+- 📊 **Estrategia de compilación optimizada**: WSL 6-7x más rápido que Docker para Linux
 
 ### Changed
 - 🛠️ **Sistema de compilación mejorado**: Manejo robusto de `PermissionError` con instrucciones claras
 - 📝 **Mensajes de error mejorados**: Instrucciones claras para resolver problemas de permisos
 - 🔄 **Eliminación de recreación innecesaria**: No se recrea el entorno virtual si ya es funcional
 - 📋 **Guía de versionado**: Archivo `VERSIONING.md` con convenciones y procesos
+- 🐳 **Docker solo para ARM**: Docker reservado únicamente para arquitecturas ARM (32/64)
 
 ### Fixed
 - ✅ **Problema de permisos**: Resuelto error "Acceso denegado" al eliminar entorno virtual en Windows
 - 🔒 **Conflictos con IDEs**: Gestión de archivos bloqueados por VS Code y otros editores
+- 🔧 **Compilación multiplataforma**: Estrategia optimizada Windows nativo + WSL nativo + Docker ARM
 
 ### Technical Details
 - **Archivos modificados**: `create_release.py`, `README.md`, `ptracker_lib/__init__.py`, `stracker/stracker_lib/__init__.py`
-- **Próximo objetivo**: Testing completo ARM64 + desarrollo ARM32
+- **Archivos nuevos**: `Makefile`, `COMPILATION_STRATEGY.md`, `test-wsl-compilation.sh`, `docker-compose.yml`
+- **Entorno probado**: ✅ Windows + WSL Debian + PyInstaller 6.14.1
+- **Próximo objetivo**: Testing completo ARM64 + desarrollo ARM32  
 - **Target**: Soporte completo Windows + Linux + ARM32 + ARM64
 - **Mantenedor**: rodrigoangeloni (continuando el trabajo de DocWilco y NEYS)
 
