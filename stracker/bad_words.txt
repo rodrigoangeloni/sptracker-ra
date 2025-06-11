@@ -1,0 +1,10 @@
+# Bad words filter file for stracker
+# Add words you want to filter from chat, one per line
+# Lines starting with # are comments and will be ignored
+
+# Example:
+# badword1
+# badword2
+# offensiveterm
+
+# This file is empty by default - add words as needed

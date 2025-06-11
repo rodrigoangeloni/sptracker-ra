@@ -16,6 +16,7 @@
 #    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import traceback
 # some modules needed by other modules. Help py2exe/pyinstaller by importing them
 import encodings.idna
 import csv
@@ -103,17 +104,27 @@ def main(stracker_ini):
     if config.config.STRACKER_CONFIG.lower_priority:
         try:
             try:
+                # Try Windows-specific priority setting
                 import win32api,win32process,win32con
                 pid = win32api.GetCurrentProcessId()
                 handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
                 win32process.SetPriorityClass(handle, win32process.BELOW_NORMAL_PRIORITY_CLASS)
+                logger.acinfo("Lowered stracker priority using win32api.")
             except ImportError:
-                import os
-                os.nice(5)
-            logger.acinfo("Lowered stracker priority.")
-        except:
+                try:
+                    # Try Unix-style nice (Linux/Mac)
+                    import os
+                    os.nice(5)
+                    logger.acinfo("Lowered stracker priority using os.nice.")
+                except (AttributeError, OSError):
+                    # os.nice not available on Windows
+                    logger.acinfo("Priority lowering not available on this platform, continuing normally.")
+        except Exception as e:
             logger.acwarning("Couldn't lower the stracker priority. Stack trace:")
             logger.acwarning(traceback.format_exc())
+    else:
+        logger.acinfo("Priority lowering disabled in configuration.")
+    
     dbBackend = backend_factory()
     ac_monitor.run(dbBackend)
 
