@@ -48,12 +48,12 @@ echo ===========================================================================
 echo.
 echo 📋 COMPILACION COMPLETA MULTIPLATAFORMA Y MULTI-ARQUITECTURA
 echo.
-echo 🎯 OBJETIVO: Generar todos los binarios para distribución:
+echo 🎯 OBJETIVO: Generar todos los binarios para distribución^:
 echo    📦 Windows 32/64: ptracker + stracker + stracker-packager
 echo    🐧 Linux 32/64: stracker
 echo    🤖 ARM 32/64: stracker
 echo.
-echo ⚙️  ESTRATEGIA:
+echo ⚙️  ESTRATEGIA^:
 echo    🪟 Windows: Compilación nativa (create_release.py)
 echo    🐧 Linux: WSL nativo (build_linux_wsl_native.sh)  
 echo    🤖 ARM: Docker Desktop + QEMU (Dockerfiles)
@@ -78,14 +78,14 @@ echo ✅ Versión a compilar: %VERSION%
 echo.
 
 REM Menú de opciones de compilación
-echo 📋 OPCIONES DE COMPILACIÓN:
+echo 📋 OPCIONES DE COMPILACIÓN^:
 echo =============================
 echo.
-echo 🪟 WINDOWS (con ptracker + stracker + stracker-packager):
+echo 🪟 WINDOWS (con ptracker + stracker + stracker-packager)^:
 echo    1. Windows 64-bit: ptracker + stracker + stracker-packager
 echo    2. Windows 32-bit: ptracker + stracker + stracker-packager
 echo.
-echo 🖥️ SOLO STRACKER (servidor):
+echo 🖥️ SOLO STRACKER (servidor)^:
 echo    3. Solo stracker Windows 64-bit
 echo    4. Solo stracker Windows 32-bit
 echo    5. Solo stracker Linux 64-bit (WSL)
@@ -93,7 +93,7 @@ echo    6. Solo stracker Linux 32-bit (WSL)
 echo    7. Solo stracker ARM 32-bit (Docker)
 echo    8. Solo stracker ARM 64-bit (Docker)
 echo.
-echo 🌐 COMPILACIÓN MASIVA:
+echo 🌐 COMPILACIÓN MASIVA^:
 echo    9. Todas las arquitecturas Windows (1+2)
 echo   10. Todas las arquitecturas Linux (5+6)
 echo   11. Todas las arquitecturas ARM (7+8)
@@ -438,10 +438,10 @@ echo ===========================================================
 REM Crear directorio final si no existe
 if not exist "versions" mkdir versions
 
-echo 📋 APLICANDO NOMENCLATURA ESTÁNDAR:
-echo    Windows: componente-v%VERSION%-win32/win64.exe
-echo    Linux:   componente-v%VERSION%-linux32/linux64.tgz  
-echo    ARM:     componente-v%VERSION%-arm32/arm64.tgz
+echo 📋 APLICANDO NOMENCLATURA ESTÁNDAR^:
+echo    Windows^: componente-v%VERSION%-win32/win64.exe
+echo    Linux^:   componente-v%VERSION%-linux32/linux64.tgz  
+echo    ARM^:     componente-v%VERSION%-arm32/arm64.tgz
 echo.
 
 REM =============================================================================
@@ -576,18 +576,18 @@ echo 📦 RESUMEN DE ARCHIVOS GENERADOS (nomenclatura estandarizada):
 echo.
 
 if exist versions\ (
-    echo 🪟 WINDOWS:
-    echo    📦 INSTALADORES Y PAQUETES:
+    echo 🪟 WINDOWS^:
+    echo    📦 INSTALADORES Y PAQUETES^:
     for %%f in (versions\ptracker-v%VERSION%-installer.exe) do echo       ✅ %%~nxf
     for %%f in (versions\stracker-v%VERSION%-win*-complete.zip) do echo       ✅ %%~nxf
     for %%f in (versions\stracker-v%VERSION%-complete.zip) do echo       ✅ %%~nxf
     echo.
     
-    echo 🐧 LINUX (solo stracker):
+    echo 🐧 LINUX ^(solo stracker^)^:
     for %%f in (versions\stracker-v%VERSION%-linux*.tgz) do echo       ✅ %%~nxf
     echo.
     
-    echo 🤖 ARM (solo stracker):
+    echo 🤖 ARM ^(solo stracker^)^:
     for %%f in (versions\stracker-v%VERSION%-arm*.tgz) do echo       ✅ %%~nxf
     echo.
     
@@ -596,17 +596,17 @@ if exist versions\ (
 )
 
 echo.
-echo 🎯 DISTRIBUCIÓN RECOMENDADA:
-echo    🏎️  Usuarios finales: ptracker-v%VERSION%-installer.exe
-echo    🖥️  Servidores Windows: stracker-v%VERSION%-win*-complete.zip
-echo    🐧 Servidores Linux: stracker-v%VERSION%-linux*.tgz
-echo    🤖 Servidores ARM: stracker-v%VERSION%-arm*.tgz
+echo 🎯 DISTRIBUCIÓN RECOMENDADA^:
+echo    🏎️  Usuarios finales^: ptracker-v%VERSION%-installer.exe
+echo    🖥️  Servidores Windows^: stracker-v%VERSION%-win*-complete.zip
+echo    🐧 Servidores Linux^: stracker-v%VERSION%-linux*.tgz
+echo    🤖 Servidores ARM^: stracker-v%VERSION%-arm*.tgz
 echo.
-echo ⚙️  COMPONENTES INCLUIDOS:
-echo    📦 ptracker-installer.exe: App completa para Assetto Corsa (instalador NSIS)
-echo    📦 stracker-complete.zip: Servidor + packager + documentación + scripts
+echo ⚙️  COMPONENTES INCLUIDOS^:
+echo    📦 ptracker-installer.exe^: App completa para Assetto Corsa (instalador NSIS)
+echo    📦 stracker-complete.zip^: Servidor + packager + documentación + scripts
 echo.
-echo 📝 NOMENCLATURA SIMPLIFICADA:
+echo 📝 NOMENCLATURA SIMPLIFICADA^:
 echo    📌 ptracker-v[VERSION]-[ARCH]-installer.exe (instalador completo)
 echo    📌 stracker-v[VERSION]-[ARCH]-complete.zip (paquete servidor)
 echo    📌 stracker-v[VERSION]-[ARCH].tgz (Linux/ARM)
@@ -623,14 +623,14 @@ echo ===========================================================================
 echo.
 echo 🔍 Revisa los mensajes anteriores para más detalles sobre el error.
 echo.
-echo 💡 SOLUCIONES COMUNES:
+echo 💡 SOLUCIONES COMUNES^:
 echo    🐍 Verificar que Python esté instalado y en PATH
 echo    🔧 Verificar que WSL Debian esté configurado
 echo    🐳 Verificar que Docker Desktop esté ejecutándose
 echo    📂 Verificar permisos de escritura en directorio versions/
 echo    🌐 Verificar conexión a internet para Docker
 echo.
-echo 🔄 Para reintentar:
+echo 🔄 Para reintentar^:
 echo    "%~nx0" %VERSION%
 echo.
 pause

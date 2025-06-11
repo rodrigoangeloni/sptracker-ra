@@ -532,9 +532,8 @@ if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or
             subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "simplejson"], check=True, universal_newlines=True)
             subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "--upgrade", "pyinstaller"], check=True, universal_newlines=True)
             subprocess.run([f"{virtualenv_path_32}/Scripts/pip.exe", "install", "apsw"], check=True, universal_newlines=True)
-        
-        # Build with 32-bit PyInstaller
-        subprocess.run([f"{virtualenv_path_32}/Scripts/pyinstaller.exe", "--name", "stracker_win32",
+          # Build with 32-bit PyInstaller
+        subprocess.run([f"{virtualenv_path_32}/Scripts/pyinstaller.exe", "--name", "stracker",
                         "--clean", "-y", "--onefile", "--exclude-module", "http_templates",
                         "--hidden-import", "cherrypy.wsgiserver.wsgiserver3",
                         "--hidden-import", "psycopg2", "--path", "..", "--path", "externals",
@@ -542,14 +541,14 @@ if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or
                        check=True, universal_newlines=True)
         
         # Generate default config for 32-bit version
-        if os.path.exists('stracker-default-win32.ini'):
-            os.remove('stracker-default-win32.ini')
-        subprocess.run([r"dist\stracker_win32.exe", "--stracker_ini", "stracker-default-win32.ini"], universal_newlines=True)
-        assert(os.path.isfile('stracker-default-win32.ini'))
+        if os.path.exists('stracker-default.ini'):
+            os.remove('stracker-default.ini')
+        subprocess.run([r"dist\stracker.exe", "--stracker_ini", "stracker-default.ini"], universal_newlines=True)
+        assert(os.path.isfile('stracker-default.ini'))
         
-        # Add to archive with specific names
-        r.write("dist/stracker_win32.exe", "stracker_win32.exe")
-        r.write("stracker-default-win32.ini", "stracker-default-win32.ini")
+        # Add to archive with correct standard names
+        r.write("dist/stracker.exe", "stracker.exe")
+        r.write("stracker-default.ini", "stracker-default.ini")
 
     if build_stracker_packager:
         print("------------------- Building stracker-packager.exe ----------------------")
