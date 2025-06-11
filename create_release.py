@@ -158,40 +158,52 @@ if linux_only:
     build_stracker_arm32 = False
     build_stracker_arm64 = False
 if windows32_only:
-    build_ptracker = True           # ✅ Habilitar ptracker para Windows 32-bit
+    # Solo habilitar componentes si no se especificó una opción específica de componente
+    if not (ptracker_only or stracker_only or stracker_packager_only):
+        build_ptracker = True           # ✅ Habilitar ptracker para Windows 32-bit
+        build_stracker_packager = True  # ✅ Habilitar stracker-packager para Windows 32-bit
+    # Deshabilitar otras arquitecturas
     build_stracker_windows = False
     build_stracker_linux = False
     build_stracker_linux32 = False
-    build_stracker_packager = True  # ✅ Habilitar stracker-packager para Windows 32-bit
     build_stracker_arm32 = False
     build_stracker_arm64 = False
     build_stracker_windows32 = True # ✅ Mantener stracker para Windows 32-bit
 if linux32_only:
-    build_ptracker = False
+    # Deshabilitar componentes Windows si no se especificó una opción específica de componente
+    if not (ptracker_only or stracker_only or stracker_packager_only):
+        build_ptracker = False
+        build_stracker_packager = False
+    # Deshabilitar otras arquitecturas
     build_stracker_windows = False
     build_stracker_windows32 = False
     build_stracker_linux = False
-    build_stracker_packager = False
     build_stracker_arm32 = False
     build_stracker_arm64 = False
     build_stracker_linux32 = True
 if arm32_only:
-    build_ptracker = False
+    # Deshabilitar componentes Windows si no se especificó una opción específica de componente
+    if not (ptracker_only or stracker_only or stracker_packager_only):
+        build_ptracker = False
+        build_stracker_packager = False
+    # Deshabilitar otras arquitecturas
     build_stracker_windows = False
     build_stracker_windows32 = False
     build_stracker_linux = False
     build_stracker_linux32 = False
-    build_stracker_packager = False
-    build_stracker_arm32 = True
     build_stracker_arm64 = False
+    build_stracker_arm32 = True
 
 if arm64_only:
-    build_ptracker = False
+    # Deshabilitar componentes Windows si no se especificó una opción específica de componente
+    if not (ptracker_only or stracker_only or stracker_packager_only):
+        build_ptracker = False
+        build_stracker_packager = False
+    # Deshabilitar otras arquitecturas
     build_stracker_windows = False
     build_stracker_windows32 = False
     build_stracker_linux = False
     build_stracker_linux32 = False
-    build_stracker_packager = False
     build_stracker_arm32 = False
     build_stracker_arm64 = True
 

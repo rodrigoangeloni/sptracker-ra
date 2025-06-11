@@ -49,9 +49,10 @@ echo.
 echo 📋 COMPILACION COMPLETA MULTIPLATAFORMA Y MULTI-ARQUITECTURA
 echo.
 echo 🎯 OBJETIVO: Generar todos los binarios para distribución^:
-echo    📦 Windows 32/64: ptracker + stracker + stracker-packager
-echo    🐧 Linux 32/64: stracker
-echo    🤖 ARM 32/64: stracker
+echo    📦 Windows 32/64: TODOS los ejecutables (opción 1-2)
+echo    🖥️  Solo stracker: servidor únicamente (opción 3-8)
+echo    🐧 Linux 32/64: solo stracker
+echo    🤖 ARM 32/64: solo stracker
 echo.
 echo ⚙️  ESTRATEGIA^:
 echo    🪟 Windows: Compilación nativa (create_release.py)
@@ -81,11 +82,11 @@ REM Menú de opciones de compilación
 echo 📋 OPCIONES DE COMPILACIÓN^:
 echo =============================
 echo.
-echo 🪟 WINDOWS (con ptracker + stracker + stracker-packager)^:
-echo    1. Windows 64-bit: ptracker + stracker + stracker-packager
-echo    2. Windows 32-bit: ptracker + stracker + stracker-packager
+echo 🪟 WINDOWS COMPLETO (ptracker + stracker + stracker-packager)^:
+echo    1. Windows 64-bit: TODOS los ejecutables
+echo    2. Windows 32-bit: TODOS los ejecutables
 echo.
-echo 🖥️ SOLO STRACKER (servidor)^:
+echo 🖥️ SOLO STRACKER (servidor únicamente)^:
 echo    3. Solo stracker Windows 64-bit
 echo    4. Solo stracker Windows 32-bit
 echo    5. Solo stracker Linux 64-bit (WSL)
@@ -93,14 +94,8 @@ echo    6. Solo stracker Linux 32-bit (WSL)
 echo    7. Solo stracker ARM 32-bit (Docker)
 echo    8. Solo stracker ARM 64-bit (Docker)
 echo.
-echo 🌐 COMPILACIÓN MASIVA^:
-echo    9. Todas las arquitecturas Windows (1+2)
-echo   10. Todas las arquitecturas Linux (5+6)
-echo   11. Todas las arquitecturas ARM (7+8)
-echo   12. COMPILACIÓN COMPLETA (todas las opciones)
-echo.
 
-set /p CHOICE="🔢 Elige una opción (1-12): "
+set /p CHOICE="🔢 Elige una opción (1-8): "
 
 if "%CHOICE%"=="1" goto WINDOWS_64_FULL
 if "%CHOICE%"=="2" goto WINDOWS_32_FULL
@@ -110,10 +105,6 @@ if "%CHOICE%"=="5" goto STRACKER_LINUX64_ONLY
 if "%CHOICE%"=="6" goto STRACKER_LINUX32_ONLY
 if "%CHOICE%"=="7" goto STRACKER_ARM32_ONLY
 if "%CHOICE%"=="8" goto STRACKER_ARM64_ONLY
-if "%CHOICE%"=="9" goto ALL_WINDOWS
-if "%CHOICE%"=="10" goto ALL_LINUX
-if "%CHOICE%"=="11" goto ALL_ARM
-if "%CHOICE%"=="12" goto ALL_COMPLETE
 
 echo ❌ Opción no válida
 pause
@@ -125,15 +116,15 @@ REM ============================================================================
 
 :WINDOWS_64_FULL
 echo.
-echo 🪟 COMPILANDO WINDOWS 64-BIT COMPLETO (ptracker + stracker + stracker-packager)
-echo ================================================================================
+echo 🪟 COMPILANDO WINDOWS 64-BIT COMPLETO (TODOS los ejecutables)
+echo ============================================================
 call :COMPILE_WINDOWS_64_FULL
 goto SUCCESS_COMPLETE
 
 :WINDOWS_32_FULL
 echo.
-echo 🪟 COMPILANDO WINDOWS 32-BIT COMPLETO (ptracker + stracker + stracker-packager)
-echo ================================================================================
+echo 🪟 COMPILANDO WINDOWS 32-BIT COMPLETO (TODOS los ejecutables)
+echo ============================================================
 call :COMPILE_WINDOWS_32_FULL
 goto SUCCESS_COMPLETE
 
@@ -179,48 +170,12 @@ echo ======================================================
 call :COMPILE_STRACKER_ARM64_ONLY
 goto SUCCESS_COMPLETE
 
-:ALL_WINDOWS
-echo.
-echo 🪟 COMPILANDO TODAS LAS ARQUITECTURAS WINDOWS
-echo ============================================
-call :COMPILE_WINDOWS_64_FULL
-call :COMPILE_WINDOWS_32_FULL
-goto SUCCESS_COMPLETE
-
-:ALL_LINUX
-echo.
-echo 🐧 COMPILANDO TODAS LAS ARQUITECTURAS LINUX (WSL)
-echo ================================================
-call :COMPILE_STRACKER_LINUX64_ONLY
-call :COMPILE_STRACKER_LINUX32_ONLY
-goto SUCCESS_COMPLETE
-
-:ALL_ARM
-echo.
-echo 🤖 COMPILANDO TODAS LAS ARQUITECTURAS ARM (Docker Desktop)
-echo =========================================================
-call :COMPILE_STRACKER_ARM32_ONLY
-call :COMPILE_STRACKER_ARM64_ONLY
-goto SUCCESS_COMPLETE
-
-:ALL_COMPLETE
-echo.
-echo 🌐 COMPILACIÓN COMPLETA - TODAS LAS ARQUITECTURAS
-echo ================================================
-call :COMPILE_WINDOWS_64_FULL
-call :COMPILE_WINDOWS_32_FULL
-call :COMPILE_STRACKER_LINUX64_ONLY
-call :COMPILE_STRACKER_LINUX32_ONLY
-call :COMPILE_STRACKER_ARM32_ONLY
-call :COMPILE_STRACKER_ARM64_ONLY
-goto SUCCESS_COMPLETE
-
 REM =============================================================================
 REM IMPLEMENTACIONES DE COMPILACIÓN
 REM =============================================================================
 
 :COMPILE_WINDOWS_64_FULL
-echo ⏳ Compilando Windows 64-bit completo (ptracker + stracker + stracker-packager)...
+echo ⏳ Compilando Windows 64-bit COMPLETO (ptracker + stracker + stracker-packager)...
 python create_release.py --windows_only --test_release_process %VERSION%
 if errorlevel 1 (
     echo ❌ Error en compilación Windows 64-bit completo
@@ -229,11 +184,11 @@ if errorlevel 1 (
 set COMPILED_PTRACKER_64=1
 set COMPILED_STRACKER_64=1
 set COMPILED_PACKAGER_64=1
-echo ✅ Windows 64-bit completo terminado
+echo ✅ Windows 64-bit COMPLETO terminado
 exit /b 0
 
 :COMPILE_WINDOWS_32_FULL
-echo ⏳ Compilando Windows 32-bit completo (ptracker + stracker + stracker-packager)...
+echo ⏳ Compilando Windows 32-bit COMPLETO (ptracker + stracker + stracker-packager)...
 python create_release.py --windows32_only --test_release_process %VERSION%
 if errorlevel 1 (
     echo ❌ Error en compilación Windows 32-bit completo
@@ -242,12 +197,12 @@ if errorlevel 1 (
 set COMPILED_PTRACKER_32=1
 set COMPILED_STRACKER_32=1
 set COMPILED_PACKAGER_32=1
-echo ✅ Windows 32-bit completo terminado
+echo ✅ Windows 32-bit COMPLETO terminado
 exit /b 0
 
 :COMPILE_STRACKER_WIN64_ONLY
 echo ⏳ Compilando solo stracker Windows 64-bit...
-python create_release.py --stracker_only %VERSION%
+python create_release.py --stracker_only --windows_only %VERSION%
 if errorlevel 1 (
     echo ❌ Error en compilación stracker Windows 64-bit
     goto ERROR

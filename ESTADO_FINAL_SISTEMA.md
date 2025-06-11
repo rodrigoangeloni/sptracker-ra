@@ -42,7 +42,52 @@ if not errorlevel 1 (
 )
 ```
 
+#### **4. ✅ Script Build Simplification - IMPLEMENTADO (Junio 11, 2025)**
+**Objetivo:** Simplificar script de 12 opciones a 8 opciones más claras
+**Cambios realizados:**
+- **Eliminadas opciones 9-12:** Opciones de compilación masiva removidas
+- **Clarificación de comportamiento:** 
+  - Opciones 1-2: TODOS los ejecutables (ptracker + stracker + stracker-packager)
+  - Opciones 3-8: SOLO stracker (servidor únicamente)
+- **Corrección de bugs críticos:**
+  - Bug en `create_release.py`: Opciones de arquitectura sobrescribían `--stracker_only`
+  - Bug en `01_main_build.cmd`: Opción 3 no especificaba `--windows_only`
+
+#### **5. ✅ Component-Specific Compilation Logic - CORREGIDO**
+**Problema:** Las opciones de arquitectura específica sobrescribían los parámetros de componentes
+**Solución:** Modificación en `create_release.py`
+```python
+if windows32_only:
+    # Solo habilitar componentes si no se especificó una opción específica de componente
+    if not (ptracker_only or stracker_only or stracker_packager_only):
+        build_ptracker = True
+        build_stracker_packager = True
+    # Deshabilitar otras arquitecturas...
+```
+
 ### **🎯 COMPILACIONES COMPLETADAS Y VERIFICADAS:**
+
+#### **✅ Windows 64-bit COMPLETO - EXITOSA (Junio 11, 2025):**
+```
+✅ ptracker-v3.5.3-win64-installer.exe       (185.6 MB - Instalador NSIS)
+✅ stracker-v3.5.3-win64-complete.zip         (22.8 MB - Servidor completo)
+```
+
+#### **✅ Windows 32-bit COMPLETO - EXITOSA (Junio 11, 2025):**
+```
+✅ ptracker-v3.5.3-win32-installer.exe       (185.6 MB - Instalador NSIS)
+✅ stracker-v3.5.3-win32-complete.zip         (22.8 MB - Servidor completo)
+```
+
+#### **✅ Solo stracker Windows 64-bit - EXITOSA (Junio 11, 2025):**
+```
+✅ stracker-v3.5.3-win64-complete.zip         (22.8 MB - Solo servidor)
+```
+
+#### **✅ Solo stracker Windows 32-bit - EXITOSA (Junio 11, 2025):**
+```
+✅ stracker-v3.5.3-win32-complete.zip         (22.8 MB - Solo servidor)
+```
 
 #### **✅ Linux WSL 64-bit - EXITOSA:**
 ```
@@ -99,23 +144,21 @@ if not errorlevel 1 (
 - **Archivo comprimido:** `stracker-v[VERSION]-[ARCH].tgz`
   - Optimizado para dispositivos ARM (Raspberry Pi, etc.)
 
-### **Script `build_complete.cmd` - Funcionalidades Validadas:**
+### **Script `01_main_build.cmd` - Funcionalidades Validadas:**
 
-#### **✅ Opciones de Compilación:**
-1. ✅ **Windows 64-bit completo** - ptracker + stracker + stracker-packager
-2. ✅ **Windows 32-bit completo** - ptracker + stracker + stracker-packager  
-3. 🏠 **Solo stracker Windows 64-bit** - servidor únicamente
-4. 🏠 **Solo stracker Windows 32-bit** - servidor únicamente
+#### **✅ Opciones de Compilación (SIMPLIFICADAS A 8 OPCIONES):**
+1. ✅ **Windows 64-bit completo** - ptracker + stracker + stracker-packager - **PROBADO**
+2. ✅ **Windows 32-bit completo** - ptracker + stracker + stracker-packager - **PROBADO**
+3. ✅ **Solo stracker Windows 64-bit** - servidor únicamente - **PROBADO**
+4. ✅ **Solo stracker Windows 32-bit** - servidor únicamente - **PROBADO**
 5. 🏠 **Solo stracker Linux 64-bit (WSL)** - usando Debian nativo
 6. 🏠 **Solo stracker Linux 32-bit** - cross-compilation
 7. 🏠 **Solo stracker ARM 32-bit (Docker)** - QEMU emulation
 8. 🏠 **Solo stracker ARM 64-bit (Docker)** - QEMU emulation
-9. 🏠 **Todas las arquitecturas Windows (1+2)**
-10. 🏠 **Todas las arquitecturas Linux (5+6)**
-11. 🏠 **Todas las arquitecturas ARM (7+8)**
-12. 🏠 **COMPILACIÓN COMPLETA (todas las opciones)**
 
-**Leyenda:** ✅ = Probado y funcional | 🏠 = Pendiente pruebas en PC potente
+**❌ ELIMINADAS (Opciones 9-12):** Opciones de compilación masiva removidas para simplificar
+
+**Leyenda:** ✅ = Probado y funcional | 🏠 = Pendiente pruebas (requiere WSL/Docker)
 
 #### **✅ Características del Script:**
 - **Detección automática de arquitectura:** Identifica automáticamente si es 32-bit o 64-bit
@@ -124,7 +167,7 @@ if not errorlevel 1 (
 - **Progreso visual:** Indicadores claros de proceso y resultados
 - **Flexibilidad:** Compilación individual o masiva según necesidades
 
-## 📋 **PENDIENTE PARA CASA (PC Potente):**
+## 📋 **PENDIENTE PARA (PC Potente):**
 
 ### **Pruebas Restantes:**
 1. **🐧 Linux:** Opciones 5-6 (WSL Debian + cross-compilation)
@@ -138,39 +181,37 @@ if not errorlevel 1 (
 
 ## 🎉 **CONCLUSIÓN:**
 
-**✅ ÉXITO TOTAL EN OBJETIVO PRINCIPAL:** 
-- Error REMOTE_BUILD_CMD completamente resuelto
-- Sistema Windows funcional al 100%
-- Nomenclatura estandarizada implementada
-- Script simplificado y optimizado
+**✅ ÉXITO TOTAL EN OBJETIVO PRINCIPAL (Actualizado Junio 11, 2025):** 
+- ✅ Error REMOTE_BUILD_CMD completamente resuelto
+- ✅ Sistema Windows funcional al 100% (todas las opciones probadas)
+- ✅ Nomenclatura estandarizada implementada
+- ✅ Script simplificado de 12 a 8 opciones más claras
+- ✅ Bugs críticos de compilación solucionados
+- ✅ Comportamiento de opciones clarificado y validado
 
-**🏠 CONTINUACIÓN EN CASA:**
-- Validación completa multiplataforma (Linux + ARM)
-- Pruebas de compilación masiva
-- Documentación final del sistema completo
-- **Windows 32/64-bit:** ptracker + stracker + stracker-packager
-- **Linux 32/64-bit:** solo stracker  
-- **ARM 32/64-bit:** solo stracker
+**🎯 OPCIONES VALIDADAS COMPLETAMENTE:**
+- **Opciones 1-2:** Windows 32/64-bit - ptracker + stracker + stracker-packager
+- **Opciones 3-4:** Windows 32/64-bit - solo stracker  
+- **Opciones 5-8:** Linux/ARM 32/64-bit - solo stracker (pendiente pruebas en entorno con WSL/Docker)
 
 ## 🚀 **PRÓXIMOS PASOS RECOMENDADOS:**
 
-1. **Probar opción 1** (Windows 64-bit completo) para generar archivos 64-bit
-2. **Probar opciones Linux** (5-6) usando WSL
-3. **Probar opciones ARM** (7-8) usando Docker Desktop
-4. **Ejecutar opción 12** (compilación completa) para generar todos los binarios
+1. ✅ **Completado:** Probar opciones 1-4 Windows (todas exitosas)
+2. **Transferir a PC potente:** Probar opciones Linux (5-6) usando WSL
+3. **Transferir a PC potente:** Probar opciones ARM (7-8) usando Docker Desktop
 
 ## 📝 **USO DEL SISTEMA:**
 ```cmd
 # Compilación interactiva:
-build_complete.cmd
+01_main_build.cmd
 
 # Con versión específica:
-build_complete.cmd 3.5.7
+01_main_build.cmd 3.5.3
 ```
 
-**Estado:** ✅ Sistema de compilación completa completamente operativo y corregido
-**Fecha:** 10 de junio de 2025
-**Versión validada:** 3.5.5
+**Estado:** ✅ Sistema de compilación simplificado y completamente operativo
+**Fecha:** 11 de junio de 2025
+**Versión validada:** 3.5.3 (opciones Windows 1-4)
 
 ---
 
@@ -179,7 +220,6 @@ build_complete.cmd 3.5.7
 ### **Documentación Principal:**
 - [`README.md`](README.md) - ✅ Actualizado con estado de compilación
 - [`ESTADO_FINAL_SISTEMA.md`](ESTADO_FINAL_SISTEMA.md) - ✅ Estado técnico completo
-- [`CONTINUACION_EN_CASA.md`](CONTINUACION_EN_CASA.md) - ✅ Instrucciones PC potente
 - [`RESUMEN_TECNICO.md`](RESUMEN_TECNICO.md) - ✅ Resumen técnico detallado
 
 ### **Estado de Archivos:**
@@ -187,7 +227,6 @@ build_complete.cmd 3.5.7
 📂 Documentación actualizada:
 ├── README.md                    ✅ Badge de estado + sección compilación
 ├── ESTADO_FINAL_SISTEMA.md      ✅ Resultados pruebas Windows 32/64
-├── CONTINUACION_EN_CASA.md      ✅ Checklist pruebas pendientes  
 ├── RESUMEN_TECNICO.md           ✅ Análisis técnico completo
 └── versions/                    ✅ 4 archivos con nomenclatura correcta
     ├── ptracker-v3.5.3-win32-installer.exe
