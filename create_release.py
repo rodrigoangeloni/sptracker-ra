@@ -155,6 +155,8 @@ if linux_only:
     build_stracker_windows = False
     build_stracker_windows32 = False
     build_stracker_packager = False
+    build_stracker_arm32 = False
+    build_stracker_arm64 = False
 if windows32_only:
     build_ptracker = True           # ✅ Habilitar ptracker para Windows 32-bit
     build_stracker_windows = False

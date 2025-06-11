@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul 2>&1
 REM =============================================================================
 REM Script Maestro de Compilación Completa - sptracker
 REM =============================================================================
@@ -268,7 +269,17 @@ exit /b 0
 
 :COMPILE_STRACKER_LINUX64_ONLY
 echo ⏳ Compilando solo stracker Linux 64-bit usando WSL...
-wsl -d Debian -- bash -c "cd /mnt/c/Users/profesor/practicas/sptracker-ra && chmod +x build_linux_wsl_native.sh && echo '%VERSION%' | ./build_linux_wsl_native.sh"
+REM Convertir ruta de Windows a WSL de forma dinámica
+set "CURRENT_PATH=%cd%"
+REM Extraer la letra de la unidad y convertir a minúsculas
+set "DRIVE_LETTER=%CURRENT_PATH:~0,1%"
+call :TOLOWER %DRIVE_LETTER% DRIVE_LOWER
+REM Convertir ruta de Windows a formato WSL
+set "WSL_PATH=%CURRENT_PATH:~2%"
+set "WSL_PATH=%WSL_PATH:\=/%"
+set "WSL_PATH=/mnt/%DRIVE_LOWER%%WSL_PATH%"
+echo 📁 Ruta WSL detectada: %WSL_PATH%
+wsl -d Debian -- bash -c "cd '%WSL_PATH%' && chmod +x build_linux_wsl_native.sh && ./build_linux_wsl_native.sh '%VERSION%' linux64"
 if errorlevel 1 (
     echo ❌ Error en compilación stracker Linux 64-bit
     goto ERROR
@@ -277,8 +288,18 @@ echo ✅ Solo stracker Linux 64-bit terminado
 exit /b 0
 
 :COMPILE_STRACKER_LINUX32_ONLY
-echo ⏳ Compilando solo stracker Linux 32-bit...
-python create_release.py --linux32_only --stracker_only %VERSION%
+echo ⏳ Compilando solo stracker Linux 32-bit usando WSL...
+REM Convertir ruta de Windows a WSL de forma dinámica
+set "CURRENT_PATH=%cd%"
+REM Extraer la letra de la unidad y convertir a minúsculas
+set "DRIVE_LETTER=%CURRENT_PATH:~0,1%"
+call :TOLOWER %DRIVE_LETTER% DRIVE_LOWER
+REM Convertir ruta de Windows a formato WSL
+set "WSL_PATH=%CURRENT_PATH:~2%"
+set "WSL_PATH=%WSL_PATH:\=/%"
+set "WSL_PATH=/mnt/%DRIVE_LOWER%%WSL_PATH%"
+echo 📁 Ruta WSL detectada: %WSL_PATH%
+wsl -d Debian -- bash -c "cd '%WSL_PATH%' && chmod +x build_linux_wsl_native.sh && ./build_linux_wsl_native.sh '%VERSION%' linux32"
 if errorlevel 1 (
     echo ❌ Error en compilación stracker Linux 32-bit
     goto ERROR
@@ -288,21 +309,57 @@ exit /b 0
 
 :COMPILE_STRACKER_ARM32_ONLY
 echo ⏳ Compilando solo stracker ARM 32-bit usando Docker Desktop...
+REM OPTIMIZACIÓN: Reutilizar imágenes Docker existentes para ahorrar tiempo
+REM Las imágenes solo contienen el entorno (OS + Python + PyInstaller)
+REM El código fuente se monta como volumen en tiempo de ejecución
 echo 🐳 Verificando Docker Desktop...
 docker --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ Error: Docker Desktop no está disponible
+    echo ❌ Error - Docker Desktop no está disponible
     echo 💡 Instala Docker Desktop y asegúrate de que esté ejecutándose
     goto ERROR
 )
-echo 🔨 Construyendo imagen Docker ARM32...
-docker build -f Dockerfile.arm32 -t sptracker-arm32:%VERSION% .
+
+echo 🔍 Verificando imágenes Docker ARM32 disponibles...
+set IMAGE_TAG=sptracker-arm32
+set IMAGE_VERSION=%VERSION%
+
+REM Primero buscar imagen latest (más eficiente)
+docker images "!IMAGE_TAG!:latest" -q >nul 2>&1
+if not errorlevel 1 (
+    echo    ✅ Imagen !IMAGE_TAG!:latest encontrada - REUTILIZANDO
+    echo    💡 Las imágenes Docker solo contienen el entorno, tu código se monta dinámicamente
+    set "FINAL_IMAGE=!IMAGE_TAG!:latest"
+    goto RUN_ARM32_CONTAINER
+)
+
+REM Si no hay latest, buscar versión específica
+docker images "!IMAGE_TAG!:!IMAGE_VERSION!" -q >nul 2>&1
+if not errorlevel 1 (
+    echo    ✅ Imagen !IMAGE_TAG!:!IMAGE_VERSION! encontrada - REUTILIZANDO
+    set "FINAL_IMAGE=!IMAGE_TAG!:!IMAGE_VERSION!"
+    goto RUN_ARM32_CONTAINER
+)
+
+REM Si no hay ninguna imagen, construir latest
+echo    ❌ No se encontró ninguna imagen ARM32, construyendo nueva...
+set "FINAL_IMAGE=!IMAGE_TAG!:latest"
+
+echo 📋 Información de debug:
+echo    🎯 Dockerfile: Dockerfile.arm32
+echo    🏷️  Tag objetivo: !FINAL_IMAGE!
+echo    🔧 Comando: docker buildx build --platform linux/arm/v7 -f Dockerfile.arm32 -t !FINAL_IMAGE! . --load
+echo.
+
+docker buildx build --platform linux/arm/v7 -f Dockerfile.arm32 -t "!FINAL_IMAGE!" . --load
 if errorlevel 1 (
     echo ❌ Error en construcción de imagen Docker ARM32
     goto ERROR
 )
+
+:RUN_ARM32_CONTAINER
 echo 🚀 Ejecutando compilación ARM32...
-docker run --rm -v "%CD%\versions:/app/versions" sptracker-arm32:%VERSION% %VERSION%
+docker run --rm -v "%CD%\versions:/app/versions" "!FINAL_IMAGE!" %VERSION%
 if errorlevel 1 (
     echo ❌ Error en compilación ARM32
     goto ERROR
@@ -312,21 +369,57 @@ exit /b 0
 
 :COMPILE_STRACKER_ARM64_ONLY
 echo ⏳ Compilando solo stracker ARM 64-bit usando Docker Desktop...
+REM OPTIMIZACIÓN: Reutilizar imágenes Docker existentes para ahorrar tiempo
+REM Las imágenes solo contienen el entorno (OS + Python + PyInstaller)
+REM El código fuente se monta como volumen en tiempo de ejecución
 echo 🐳 Verificando Docker Desktop...
 docker --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ Error: Docker Desktop no está disponible
+    echo ❌ Error - Docker Desktop no está disponible
     echo 💡 Instala Docker Desktop y asegúrate de que esté ejecutándose
     goto ERROR
 )
-echo 🔨 Construyendo imagen Docker ARM64...
-docker build -f Dockerfile.arm64 -t sptracker-arm64:%VERSION% .
+
+echo 🔍 Verificando imágenes Docker ARM64 disponibles...
+set IMAGE_TAG=sptracker-arm64
+set IMAGE_VERSION=%VERSION%
+
+REM Primero buscar imagen latest (más eficiente)
+docker images "!IMAGE_TAG!:latest" -q >nul 2>&1
+if not errorlevel 1 (
+    echo    ✅ Imagen !IMAGE_TAG!:latest encontrada - REUTILIZANDO
+    echo    💡 Las imágenes Docker solo contienen el entorno, tu código se monta dinámicamente
+    set "FINAL_IMAGE=!IMAGE_TAG!:latest"
+    goto RUN_ARM64_CONTAINER
+)
+
+REM Si no hay latest, buscar versión específica
+docker images "!IMAGE_TAG!:!IMAGE_VERSION!" -q >nul 2>&1
+if not errorlevel 1 (
+    echo    ✅ Imagen !IMAGE_TAG!:!IMAGE_VERSION! encontrada - REUTILIZANDO
+    set "FINAL_IMAGE=!IMAGE_TAG!:!IMAGE_VERSION!"
+    goto RUN_ARM64_CONTAINER
+)
+
+REM Si no hay ninguna imagen, construir latest
+echo    ❌ No se encontró ninguna imagen ARM64, construyendo nueva...
+set "FINAL_IMAGE=!IMAGE_TAG!:latest"
+
+echo 📋 Información de debug:
+echo    🎯 Dockerfile: Dockerfile.arm64
+echo    🏷️  Tag objetivo: !FINAL_IMAGE!
+echo    🔧 Comando: docker buildx build --platform linux/arm64 -f Dockerfile.arm64 -t !FINAL_IMAGE! . --load
+echo.
+
+docker buildx build --platform linux/arm64 -f Dockerfile.arm64 -t "!FINAL_IMAGE!" . --load
 if errorlevel 1 (
     echo ❌ Error en construcción de imagen Docker ARM64
     goto ERROR
 )
+
+:RUN_ARM64_CONTAINER
 echo 🚀 Ejecutando compilación ARM64...
-docker run --rm -v "%CD%\versions:/app/versions" sptracker-arm64:%VERSION% %VERSION%
+docker run --rm -v "%CD%\versions:/app/versions" "!FINAL_IMAGE!" %VERSION%
 if errorlevel 1 (
     echo ❌ Error en compilación ARM64
     goto ERROR
@@ -407,6 +500,10 @@ for %%f in (
     "versions\stracker_linux_x86.tgz" 
     "versions\stracker-linux-x64.tgz"
     "versions\stracker-linux64.tgz"
+    "stracker\stracker_linux_x64.tgz"
+    "stracker\stracker_linux_x86.tgz"
+    "stracker\stracker-linux-x64.tgz"
+    "stracker\stracker-linux64.tgz"
 ) do (
     if exist "%%f" (
         if not exist "versions\stracker-v%VERSION%-linux64.tgz" (
@@ -421,6 +518,10 @@ for %%f in (
     "versions\stracker_linux_i386.tgz"
     "versions\stracker-linux-x86.tgz"
     "versions\stracker-linux32.tgz"
+    "stracker\stracker_linux_x86_32.tgz"
+    "stracker\stracker_linux_i386.tgz"
+    "stracker\stracker-linux-x86.tgz"
+    "stracker\stracker-linux32.tgz"
 ) do (
     if exist "%%f" (
         if not exist "versions\stracker-v%VERSION%-linux32.tgz" (
@@ -534,6 +635,40 @@ echo    "%~nx0" %VERSION%
 echo.
 pause
 exit /b 1
+
+REM =============================================================================
+REM FUNCIONES AUXILIARES
+REM =============================================================================
+
+:TOLOWER
+set %2=%1
+if "%1"=="A" set %2=a
+if "%1"=="B" set %2=b
+if "%1"=="C" set %2=c
+if "%1"=="D" set %2=d
+if "%1"=="E" set %2=e
+if "%1"=="F" set %2=f
+if "%1"=="G" set %2=g
+if "%1"=="H" set %2=h
+if "%1"=="I" set %2=i
+if "%1"=="J" set %2=j
+if "%1"=="K" set %2=k
+if "%1"=="L" set %2=l
+if "%1"=="M" set %2=m
+if "%1"=="N" set %2=n
+if "%1"=="O" set %2=o
+if "%1"=="P" set %2=p
+if "%1"=="Q" set %2=q
+if "%1"=="R" set %2=r
+if "%1"=="S" set %2=s
+if "%1"=="T" set %2=t
+if "%1"=="U" set %2=u
+if "%1"=="V" set %2=v
+if "%1"=="W" set %2=w
+if "%1"=="X" set %2=x
+if "%1"=="Y" set %2=y
+if "%1"=="Z" set %2=z
+exit /b 0
 
 :PRINT_STEP
 set /a CURRENT_STEP+=1

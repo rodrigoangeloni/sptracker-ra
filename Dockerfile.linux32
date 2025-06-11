@@ -1,0 +1,38 @@
+
+FROM i386/python:3.11-slim
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libffi-dev \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    curl \
+    git \
+    postgresql-client \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create working directory
+WORKDIR /app
+
+# Copy source code
+COPY . /app/
+
+# Create virtual environment
+RUN python -m venv env/linux32
+RUN env/linux32/bin/pip install --upgrade pip
+
+# Install Python packages
+RUN env/linux32/bin/pip install bottle cherrypy python-dateutil wsgi-request-logger simplejson pyinstaller psycopg2-binary apsw
+
+# Build script
+COPY create_release_linux32.sh /app/
+RUN chmod +x /app/create_release_linux32.sh
+
+# Run build
+CMD ["/app/create_release_linux32.sh"]

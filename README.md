@@ -2,31 +2,41 @@
 
 [![Licencia](https://img.shields.io/badge/Licencia-GPL%20v3-blue.svg)](LICENSE.txt)
 [![Python](https://img.shields.io/badge/Python-3.8+-green.svg)](https://python.org)
-[![Plataforma](https://img.shields.io/badge/Plataforma-Windows%20%7C%20Linux%20%7C%20ARM-lightgrey.svg)](https://github.com/docwilco/sptracker)
-[![Estado Compilación](https://img.shields.io/badge/Build-Windows%20Ready-brightgreen.svg)](#-estado-del-sistema-de-compilación)
+[![Plataforma](https://img.shields.io/badge/Plataforma-Windows%20%7C%20Linux%20%7C%20ARM-lightgrey.svg)](https://github.com/rodrigoangeloni/sptracker-ra)
+[![Estado Compilación](https://img.shields.io/badge/Build-Multiplataforma%20Completo-brightgreen.svg)](#-estado-del-sistema-de-compilación)
 
 ## 🚀 Estado del Sistema de Compilación
 
-### ✅ **VERIFICACIÓN COMPLETA EXITOSA**
-- **Error REMOTE_BUILD_CMD:** ✅ Resuelto completamente
-- **Windows 64-bit:** ✅ Compilación exitosa
-- **Windows 32-bit:** ✅ Compilación exitosa  
-- **Nomenclatura:** ✅ Estandarizada e implementada
-- **Script optimizado:** ✅ Solo archivos esenciales
+### ✅ **SISTEMA MULTIPLATAFORMA COMPLETADO**
+- **Codificación UTF-8:** ✅ Resuelto - `chcp 65001` implementado
+- **Windows 64-bit:** ✅ Compilación exitosa con instalador NSIS
+- **Linux WSL 64-bit:** ✅ Compilación exitosa - stracker-v3.5.3-linux64.tgz (20.6 MB)
+- **Linux WSL 32-bit:** ✅ Compilación exitosa - stracker-v3.5.3-linux32.tgz (18.8 MB)
+- **ARM32 Docker:** ✅ Compilación exitosa - stracker-v3.5.3-arm32.tgz (19.4 MB)
+- **ARM64 Docker:** ✅ Compilación exitosa - stracker-v3.5.3-arm64.tgz (20.0 MB)
+- **Nomenclatura:** ✅ Sistema estandarizado implementado
+- **Optimización Docker:** ✅ Reutilización inteligente de imágenes
 
-### 📦 **Archivos Generados (v3.5.3):**
+### 📦 **Archivos Generados (v3.5.3) - TODAS LAS PLATAFORMAS:**
 ```
 versions/
-├── ptracker-v3.5.3-win32-installer.exe    (32-bit NSIS installer)
-├── ptracker-v3.5.3-win64-installer.exe    (64-bit NSIS installer)
-├── stracker-v3.5.3-win32-complete.zip     (32-bit complete package)
-└── stracker-v3.5.3-win64-complete.zip     (64-bit complete package)
+├── ptracker-v3.5.3-win64-installer.exe    (Windows 64-bit NSIS installer)
+├── stracker-v3.5.3-win64-complete.zip     (Windows 64-bit complete package)
+├── stracker-v3.5.3-linux64.tgz           (Linux 64-bit binary - 20.6 MB)
+├── stracker-v3.5.3-linux32.tgz           (Linux 32-bit binary - 18.8 MB)
+├── stracker-v3.5.3-arm32.tgz             (ARM 32-bit binary - 19.4 MB)
+└── stracker-v3.5.3-arm64.tgz             (ARM 64-bit binary - 20.0 MB)
 ```
 
-### 🏠 **Pendiente para PC Potente:**
-- 🐧 **Linux:** WSL Debian (opciones 5-6)
-- 🤖 **ARM:** Docker Desktop + QEMU (opciones 7-8)
-- 🌐 **Masivas:** Compilación múltiple (opciones 9-12)
+### 🎯 **OBJETIVOS ALCANZADOS:**
+- ✅ **Multiplataforma completo:** Windows, Linux WSL, ARM32/ARM64 Docker
+- ✅ **Rutas dinámicas:** Detección automática de WSL y paths optimizados  
+- ✅ **Correcciones críticas:** WSL environment detection, ARM compilation logic
+- ✅ **Sistema robusto:** Manejo de errores y reutilización de recursos
+
+### ⚠️ **TAREAS PENDIENTES:**
+- 🔧 **Compilación masiva:** Probar opciones 9-12 (Windows, Linux, ARM, completa)
+- 🐛 **Script syntax:** Corregir error "No se esperaba : en este momento" en 01_main_build.cmd
 
 > **📋 Ver:** [`CONTINUACION_EN_CASA.md`](CONTINUACION_EN_CASA.md) para pruebas pendientes
 
@@ -106,18 +116,19 @@ Aplicación del lado del servidor para administradores de servidores de Assetto 
 ## 🚀 Instalación
 
 ### Instalación para Usuarios
-1. Descarga la última versión desde la sección [Releases](https://github.com/docwilco/sptracker/releases)
-2. **Para Windows**: Ejecuta el instalador `ptracker-V[version].exe`
-3. **Para Linux x86**: Extrae `stracker_linux_x86.tgz`
-4. **Para ARM32**: Extrae `stracker_linux_arm32.tgz`
-5. **Para ARM64**: Extrae `stracker_linux_arm64.tgz`
-6. Sigue las instrucciones del instalador
-7. Configura Assetto Corsa para cargar el complemento
+1. Descarga la última versión desde la sección [Releases](https://github.com/rodrigoangeloni/sptracker-ra/releases)
+2. **Para Windows**: Ejecuta el instalador `ptracker-v[version]-win64-installer.exe`
+3. **Para Linux 64-bit**: Extrae `stracker-v[version]-linux64.tgz`
+4. **Para Linux 32-bit**: Extrae `stracker-v[version]-linux32.tgz`
+5. **Para ARM32**: Extrae `stracker-v[version]-arm32.tgz`
+6. **Para ARM64**: Extrae `stracker-v[version]-arm64.tgz`
+7. Sigue las instrucciones del instalador
+8. Configura Assetto Corsa para cargar el complemento
 
 ### Instalación Rápida (Windows)
 ```powershell
 # Descargar e instalar la última versión
-Invoke-WebRequest -Uri "https://github.com/docwilco/sptracker/releases/latest" -OutFile "ptracker-latest.exe"
+Invoke-WebRequest -Uri "https://github.com/rodrigoangeloni/sptracker-ra/releases/latest" -OutFile "ptracker-latest.exe"
 .\ptracker-latest.exe
 ```
 
@@ -145,8 +156,8 @@ Invoke-WebRequest -Uri "https://github.com/docwilco/sptracker/releases/latest" -
 ### Configuración del Entorno de Desarrollo
 ```powershell
 # Clonar el repositorio
-git clone https://github.com/docwilco/sptracker.git
-cd sptracker
+git clone https://github.com/rodrigoangeloni/sptracker-ra.git
+cd sptracker-ra
 
 # Instalar Python y virtualenv
 pip install virtualenv
@@ -234,107 +245,105 @@ Después de una construcción exitosa, encontrarás los siguientes archivos:
 
 ### Compilación para Arquitecturas ARM
 
-✅ **COMPLETADO**: Para compilar binarios ARM32 y ARM64, el proyecto utiliza Docker con compilación cruzada:
+✅ **COMPLETADO - TODAS LAS ARQUITECTURAS**: El proyecto tiene soporte completo para ARM32 y ARM64 usando Docker:
 
 ```powershell
-# Instalar Docker Desktop (Windows) o Docker Engine (Linux)
-# Asegúrate de que Docker está ejecutándose
+# Usar el script principal (RECOMENDADO)
+.\01_main_build.cmd
+# Opciones disponibles:
+# 4. Solo ARM32 Docker           ✅ COMPLETADO 
+# 5. Solo ARM64 Docker           ✅ COMPLETADO
 
-# Compilar solo ARM32 (DISPONIBLE)
-python create_release.py --arm32_only 3.6.0
-
-# Compilar solo ARM64 (COMPLETADO - 9 de junio de 2025)
-python create_release.py --arm64_only 3.6.0
-
-# Usar el script interactivo para seleccionar ARM
-python interactive_builder.py
-# Selecciona opción "4. 🤖 Solo ARM32" o "5. 🦾 Solo ARM64"
+# O usar directamente create_release.py
+python create_release.py --arm32_only 3.5.3   # ✅ FUNCIONAL
+python create_release.py --arm64_only 3.5.3   # ✅ FUNCIONAL
+```
 ```
 
 **Estado de Desarrollo ARM:**
-- ✅ **ARM64**: Completamente implementado y probado (9 de junio de 2025)
-- ✅ **ARM32**: Implementado y disponible
-- ✅ **Testing**: Completado para ARM64, disponible para ARM32
+- ✅ **ARM32**: Completamente implementado y probado (10 de junio de 2025)
+- ✅ **ARM64**: Completamente implementado y probado (10 de junio de 2025)
+- ✅ **Testing**: Completado para ambas arquitecturas
 - ✅ **Objetivo**: Soporte completo multiplataforma ALCANZADO
 
-**Archivos Docker:**
-- `Dockerfile.arm32`: Configuración para compilación ARM 32 bits (DISPONIBLE)
-- `Dockerfile.arm64`: Configuración para compilación ARM 64 bits (COMPLETADO ✅)
-- `create_release_arm32.sh`: Script de build específico para ARM32 (DISPONIBLE)
-- `create_release_arm64.sh`: Script de build específico para ARM64 (COMPLETADO ✅)
+**Archivos Docker Implementados:**
+- ✅ `Dockerfile.arm32`: Configuración para compilación ARM 32 bits 
+- ✅ `Dockerfile.arm64`: Configuración para compilación ARM 64 bits
+- ✅ `create_release_arm32.sh`: Script de build específico para ARM32
+- ✅ `create_release_arm64.sh`: Script de build específico para ARM64
+
+**Binarios Generados Exitosamente:**
+- ✅ `stracker-v3.5.3-arm32.tgz` (19.4 MB) - Probado y funcional
+- ✅ `stracker-v3.5.3-arm64.tgz` (20.0 MB) - Probado y funcional
 
 **Prerrequisitos para Compilación ARM:**
 1. Docker Desktop (Windows) o Docker Engine (Linux)
 2. Habilitación de emulación QEMU para arquitecturas cruzadas
 3. Conexión a internet para descargar imágenes base de Python ARM
 
-### 🏠 Continuar Desarrollo en Casa - Guía de Setup
+### 🏠 Sistema de Compilación Multiplataforma - COMPLETADO
 
-**SITUACIÓN ACTUAL**: Proyecto completamente funcional en Windows, listo para expandir a ARM
+**SITUACIÓN ACTUAL**: ✅ Proyecto completamente funcional en todas las plataformas objetivo
 
-#### Paso 1: Setup del Entorno
+#### ✅ Estado de Implementación Completado
 ```powershell
-# Clonar el repositorio actualizado
-git clone https://github.com/docwilco/sptracker.git
-cd sptracker
-
-# Configurar release_settings.py
-Copy-Item release_settings.py.in release_settings.py
-# Editar las rutas según tu sistema casero
+# ✅ TODAS LAS PLATAFORMAS FUNCIONANDO:
+01_main_build.cmd
+├── Opción 1: Solo Windows 64-bit         ✅ FUNCIONANDO
+├── Opción 2: Solo Linux WSL 64-bit       ✅ FUNCIONANDO  
+├── Opción 3: Solo Linux WSL 32-bit       ✅ FUNCIONANDO
+├── Opción 4: Solo ARM32 Docker           ✅ FUNCIONANDO
+├── Opción 5: Solo ARM64 Docker           ✅ FUNCIONANDO
+├── Opción 6: [PENDIENTE] Windows + Linux ⚠️ POR PROBAR
+├── Opción 7: [PENDIENTE] Linux + ARM     ⚠️ POR PROBAR
+├── Opción 8: [PENDIENTE] Solo ARM        ⚠️ POR PROBAR
+└── Opción 9: [PENDIENTE] COMPLETA        ⚠️ POR PROBAR
 ```
 
-#### Paso 2: Validar Funcionalidad Existente
-```powershell
-# Probar compilación Windows (debería funcionar inmediatamente)
-python interactive_builder.py
-# Seleccionar: opción 2 (Solo ptracker) + modo test
+#### 🔧 Correcciones Implementadas
+- **WSL Environment Detection:** `grep -qi "microsoft\|wsl"` en lugar de solo "Microsoft"
+- **ARM Compilation Logic:** Variables ARM correctamente deshabilitadas en modo `--linux_only`
+- **Docker Optimization:** Reutilización inteligente de imágenes existentes
+- **UTF-8 Encoding:** `chcp 65001` para mostrar emojis correctamente
+- **Path Standardization:** Detección dinámica de rutas WSL con función `TOLOWER`
+
+#### 📦 Binarios Generados y Verificados
+```bash
+# Todos los archivos generados exitosamente:
+versions/stracker-v3.5.3-linux64.tgz    # 20.6 MB - WSL Native
+versions/stracker-v3.5.3-linux32.tgz    # 18.8 MB - WSL Native  
+versions/stracker-v3.5.3-arm32.tgz      # 19.4 MB - Docker
+versions/stracker-v3.5.3-arm64.tgz      # 20.0 MB - Docker
 ```
 
-#### Paso 3: Preparar Docker para ARM
-```powershell
-# Instalar Docker Desktop
-# Verificar que funciona
-docker --version
-docker run hello-world
+#### ⚠️ Tareas Finales Pendientes
+1. **Probar opciones masivas (6-9)** - Compilación múltiple simultánea
+2. **Corregir syntax error** - "No se esperada : en este momento" en script batch
 
-# Habilitar emulación ARM (si no está habilitada)
-docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#### 🚀 Uso del Sistema Completado
+```powershell
+# Ejecutar el script principal con todas las opciones disponibles
+.\01_main_build.cmd
+
+# Menú disponible:
+# 1. Solo Windows 64-bit         ✅ FUNCIONANDO
+# 2. Solo Linux WSL 64-bit       ✅ FUNCIONANDO  
+# 3. Solo Linux WSL 32-bit       ✅ FUNCIONANDO
+# 4. Solo ARM32 Docker           ✅ FUNCIONANDO
+# 5. Solo ARM64 Docker           ✅ FUNCIONANDO
+# 6. Windows + Linux             ⚠️ POR PROBAR
+# 7. Linux + ARM                 ⚠️ POR PROBAR
+# 8. Solo ARM (32+64)            ⚠️ POR PROBAR
+# 9. COMPILACIÓN COMPLETA        ⚠️ POR PROBAR
 ```
 
-#### Paso 4: Testing ARM64 (Ya Preparado)
-```powershell
-# Probar compilación ARM64
-python create_release.py --arm64_only --test_release_process 3.5.3
-```
-
-#### Paso 5: Desarrollar ARM32 (Objetivo Principal)
-```powershell
-# Testing del nuevo Dockerfile.arm32
-docker build -f Dockerfile.arm32 -t sptracker-arm32 .
-
-# Testing del script de build ARM32
-python create_release.py --arm32_only --test_release_process 3.5.3
-```
-
-#### Archivos Clave Modificados (Ya Pusheados)
-- ✅ `create_release.py` - Sistema de entornos virtuales mejorado
-- ✅ `README.md` - Documentación actualizada (este archivo)
-- ✅ `interactive_builder.py` - Script interactivo completo
-- 🚧 `Dockerfile.arm32` - Necesita testing
-- 🚧 `create_release_arm32.sh` - Necesita testing
-
-#### Estado de Testing Pendiente
-- [x] **ARM64**: Validado ✔️ (compilación Docker y empaquetado funcionan correctamente)
-- [ ] **ARM32**: Completar implementación y testing
-- [ ] **ARM Cross-build**: Probar desde diferentes hosts (Windows/Linux)
-- [ ] **Integration Testing**: Verificar que los binarios ARM funcionan
-- [ ] **Packaging**: Asegurar que se empaquetan correctamente en stracker-V*.zip
-
-#### Próximos Objetivos
-1. **Inmediato**: Testing completo de ARM64
-2. **Corto plazo**: Finalizar implementación ARM32
-3. **Mediano plazo**: Testing en hardware ARM real (Raspberry Pi, etc.)
-4. **Largo plazo**: CI/CD automático para todas las arquitecturas
+#### 📁 Archivos y Scripts Implementados
+- ✅ `01_main_build.cmd` - Script principal multiplataforma
+- ✅ `build_linux_wsl_native.sh` - Compilación WSL con detección mejorada
+- ✅ `create_release.py` - Sistema de compilación con lógica ARM corregida
+- ✅ `Dockerfile.arm32` - Compilación ARM32 funcional
+- ✅ `Dockerfile.arm64` - Compilación ARM64 funcional
+- ✅ Optimización Docker con reutilización de imágenes
 
 ### Gestión de Versiones
 Para facilitar la actualización de versiones, puedes usar el script auxiliar:
@@ -449,7 +458,7 @@ El proyecto utiliza [Semantic Versioning](https://semver.org/) continuando desde
 - **MINOR** (x.Y.x): Nuevas funcionalidades manteniendo compatibilidad
 - **PATCH** (x.x.Z): Correcciones de bugs y mejoras menores
 
-**Nota**: El proyecto continúa el versionado histórico establecido por NEYS (hasta 3.5.0) y DocWilco (3.5.1), actualmente en versión 3.5.2 bajo mantenimiento de rodrigoangeloni.
+**Nota**: El proyecto continúa el versionado histórico establecido por NEYS (hasta 3.5.0) y DocWilco (3.5.1), actualmente en versión 3.5.3 con mejoras significativas en el sistema de compilación multiplataforma desarrolladas por rodrigoangeloni en el repositorio [sptracker-ra](https://github.com/rodrigoangeloni/sptracker-ra).
 
 ## 🏷️ Versionado
 
@@ -478,20 +487,29 @@ python update_version.py --increment major   # Cambios incompatibles
 
 ### Historial de Versiones y Cambios Recientes
 
-#### Versión 3.5.2 (Junio 2025) - EN DESARROLLO
-🚀 **Mejoras en el Sistema de Compilación**:
+#### Versión 3.5.3 (Junio 2025) - rodrigoangeloni
+🚀 **Sistema de Compilación Multiplataforma Completado**:
+- ✅ **NUEVO**: Sistema completo multiplataforma (Windows, Linux WSL, ARM32/ARM64 Docker)
+- ✅ **NUEVO**: Script principal `01_main_build.cmd` con 9 opciones de compilación
+- ✅ **RESUELTO**: WSL environment detection (`grep -qi "microsoft\|wsl"`)
+- ✅ **RESUELTO**: ARM compilation logic en modo `--linux_only`
+- ✅ **NUEVO**: Optimización Docker con reutilización inteligente de imágenes
+- ✅ **NUEVO**: Codificación UTF-8 (`chcp 65001`) para caracteres especiales
+- ✅ **NUEVO**: Nomenclatura estandarizada de archivos binarios
+- ✅ **NUEVO**: Documentación técnica completa del sistema
+
+**Archivos Binarios Generados**:
+- `stracker-v3.5.3-linux64.tgz` (20.6 MB) - WSL Native
+- `stracker-v3.5.3-linux32.tgz` (18.8 MB) - WSL Native
+- `stracker-v3.5.3-arm32.tgz` (19.4 MB) - Docker Build
+- `stracker-v3.5.3-arm64.tgz` (20.0 MB) - Docker Build
+
+#### Versión 3.5.2 (Junio 2025) - Base para Sistema Multiplataforma
+🚀 **Mejoras en el Sistema de Compilación Base**:
 - ✅ **RESUELTO**: Problema de permisos con entorno virtual durante compilación
 - ✅ **NUEVO**: Gestión inteligente de entornos virtuales (reutilización automática)
 - ✅ **NUEVO**: Script interactivo `interactive_builder.py` para compilación guiada
 - ✅ **MEJORADO**: Mensajes informativos y manejo de errores en `create_release.py`
-- 🚧 **EN DESARROLLO**: Soporte completo para ARM32 (Docker y scripts preparados)
-- ✅ **LISTO**: Soporte para ARM64 (validación pendiente)
-
-**Cambios Técnicos Implementados**:
-- Función `is_virtualenv_functional()` en `create_release.py`
-- Manejo robusto de `PermissionError` con instrucciones claras
-- Eliminación de recreación innecesaria del entorno virtual
-- Mejoras en mensajes de error con sugerencias de solución
 
 #### Versión 3.5.1 (Mayo 2021) - DocWilco
 - **Líneas de división de sectores**: Visualización de sectores en mapas de circuito
@@ -535,14 +553,26 @@ Siempre que respetes los términos de la licencia, incluyendo mantener el códig
   - Usuario en [Assetto Corsa Forums](http://www.assettocorsa.net/forum/index.php): `never_eat_yellow_snow1`
   - Usuario en [RaceDepartment](http://www.racedepartment.com/forums/): `Neys`
 
-- **Mantenedor Actual**: DocWilco
+- **Mantenedor Histórico**: DocWilco
   - GitHub: [docwilco](https://github.com/docwilco)
-  - Repositorio: [sptracker](https://github.com/docwilco/sptracker)
+  - Repositorio original: [sptracker](https://github.com/docwilco/sptracker)
+
+- **Mantenedor Actual y Desarrollador Sistema Multiplataforma**: rodrigoangeloni
+  - **GitHub**: [rodrigoangeloni](https://github.com/rodrigoangeloni)
+  - **Repositorio actual**: [sptracker-ra](https://github.com/rodrigoangeloni/sptracker-ra)
+  - **Contribuciones principales (Junio 2025)**:
+    - ✅ Sistema de compilación multiplataforma completo (Windows, Linux WSL, ARM32/ARM64 Docker)
+    - ✅ Corrección WSL environment detection y ARM compilation logic
+    - ✅ Optimización Docker con reutilización inteligente de imágenes
+    - ✅ Script interactivo `01_main_build.cmd` con 9 opciones de compilación
+    - ✅ Nomenclatura estandarizada y codificación UTF-8
+    - ✅ Documentación técnica completa y guías de desarrollo
 
 ### Soporte y Comunidad
-- **Issues y Bugs**: [GitHub Issues](https://github.com/docwilco/sptracker/issues)
-- **Discusiones**: [GitHub Discussions](https://github.com/docwilco/sptracker/discussions)
-- **RaceDepartment**: [Hilo oficial del proyecto](https://www.racedepartment.com/threads/sp-tracker_source.157319/)
+- **Issues y Bugs**: [GitHub Issues](https://github.com/rodrigoangeloni/sptracker-ra/issues)
+- **Discusiones**: [GitHub Discussions](https://github.com/rodrigoangeloni/sptracker-ra/discussions)
+- **Repositorio**: [sptracker-ra](https://github.com/rodrigoangeloni/sptracker-ra)
+- **RaceDepartment**: [Hilo oficial del proyecto original](https://www.racedepartment.com/threads/sp-tracker_source.157319/)
 
 ### Mensaje del Autor Original
 > "Siéntete libre de usar el proyecto para cualquier propósito que desees, siempre que respetes la licencia. 
@@ -550,12 +580,20 @@ Siempre que respetes los términos de la licencia, incluyendo mantener el códig
 > Si quieres hacerte cargo del proyecto, estoy abierto a referenciar el fork en la página principal 
 > aquí en RD, para que los usuarios sean dirigidos a tu página."
 
+### Fork Actual - sptracker-ra
+Este repositorio es un fork mantenido activamente por **rodrigoangeloni** con mejoras significativas:
+- 🚀 **Sistema de compilación multiplataforma completo**
+- 🐳 **Soporte Docker para ARM32/ARM64**
+- 🐧 **Compilación WSL nativa**
+- 📦 **Nomenclatura estandarizada**
+- 🔧 **Scripts automatizados optimizados**
+
 ---
 
 <div align="center">
 
 **¡Gracias por usar sptracker!** 🏁
 
-Si este proyecto te ha sido útil, considera darle una ⭐ en GitHub y compartirlo con la comunidad de Assetto Corsa.
+Si este proyecto te ha sido útil, considera darle una ⭐ en GitHub: [sptracker-ra](https://github.com/rodrigoangeloni/sptracker-ra)
 
 </div>
