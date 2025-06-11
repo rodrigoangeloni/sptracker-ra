@@ -16,7 +16,27 @@ Este changelog sigue las convenciones de [Keep a Changelog](https://keepachangel
 
 ---
 
-## [3.5.2] - 2025-06-10 (EN DESARROLLO) - rodrigoangeloni
+## [3.5.3] - 2025-06-11 - rodrigoangeloni
+
+### Fixed
+- 🚨 **CRÍTICO - Crash stracker.py resuelto**: Corrección de `NameError: name 'traceback' is not defined` que causaba crash del servidor en producción
+- 🔧 **Manejo robusto de prioridades**: Implementación mejorada para gestión de prioridades de proceso Windows/Linux sin fallos
+- 📁 **Archivo bad_words.txt**: Agregado archivo faltante para filtro de palabras (evita warning al inicio)
+- ✅ **Verificación en producción**: Correcciones validadas y funcionando correctamente en servidor real
+
+### Technical Details
+- **Archivo corregido**: `stracker/stracker.py` - Agregado `import traceback` en línea 19
+- **Mejora implementada**: Manejo de excepciones robusto en función `main()` para prioridades de proceso
+- **Archivos nuevos**: `stracker/bad_words.txt` con estructura básica para filtro
+- **Compilación**: Generados nuevos binarios Windows 32/64-bit con correcciones aplicadas
+- **Estado**: ✅ **VERIFICADO EN PRODUCCIÓN** - Servidor funcionando sin errores
+
+### Breaking Changes
+- Ninguno - Esta es una corrección de compatibilidad que mantiene toda la funcionalidad existente
+
+---
+
+## [3.5.2] - 2025-06-10 - rodrigoangeloni
 
 ### Added
 - 🚀 **Gestión inteligente de entornos virtuales**: Reutilización automática de entornos existentes funcionales

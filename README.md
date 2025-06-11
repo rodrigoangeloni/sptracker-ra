@@ -34,6 +34,13 @@ versions/
 - ✅ **Correcciones críticas:** WSL environment detection, ARM compilation logic
 - ✅ **Sistema robusto:** Manejo de errores y reutilización de recursos
 
+### 🐛 **CORRECCIONES CRÍTICAS APLICADAS (v3.5.3):**
+- ✅ **Crash stracker resuelto:** Agregado `import traceback` faltante que causaba `NameError`
+- ✅ **Prioridades robustas:** Manejo multiplataforma mejorado (Windows/Linux/Mac)
+- ✅ **Filtro chat:** Archivo `bad_words.txt` agregado para moderación
+- ✅ **Logs mejorados:** Manejo de errores más detallado y específico
+- ✅ **Probado en producción:** Funcionamiento confirmado en servidor real
+
 ### ⚠️ **TAREAS PENDIENTES:**
 - 🔧 **Compilación masiva:** Probar opciones 9-12 (Windows, Linux, ARM, completa)
 - 🐛 **Script syntax:** Corregir error "No se esperaba : en este momento" en 01_main_build.cmd
