@@ -32,7 +32,8 @@ if [ -f "stracker-default.ini" ]; then
 fi
 
 # Run stracker to generate default config (will fail but create config)
-./dist/stracker --stracker_ini stracker-default.ini || true
+echo "Generating default configuration..."
+./dist/stracker --stracker_ini stracker-default.ini > /dev/null 2>&1 || true
 
 # Create tarball
 echo "Creating ARM64 distribution tarball..."

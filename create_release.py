@@ -416,13 +416,20 @@ ptracker_lib/stdlib64/CreateFileHook.dll""".split("\n")
             dirs = set([os.path.split(outfn)[0] for outfn in self.files.keys()])
             subst = {
                 'target':self.target,
-                'DirStatements':"\n".join([r'CreateDirectory $INSTDIR\%s'%d for d in dirs]),
-                'FileStatements':"\n".join([r'File "/oname=$INSTDIR\%s" %s'%(outfn, infn) for outfn,infn in self.files.items()]),
+                'DirStatements':"\n".join([r'CreateDirectory $INSTDIR\%s'%d for d in dirs]),                'FileStatements':"\n".join([r'File "/oname=$INSTDIR\%s" %s'%(outfn, infn) for outfn,infn in self.files.items()]),
             }
             open(self.script, "w").write(s % subst)
             subprocess.run([r"C:\Program Files (x86)\NSIS\makensis.exe", self.script], check=True, universal_newlines=True)
 
-    r = nsis_builder("versions/ptracker-V%s.exe" % version, "ptracker.nsh") 
+    # Generate installer filename based on architecture
+    if windows32_only:
+        installer_filename = f"versions/ptracker-v{version}-win32-installer.exe"
+    elif windows_only:
+        installer_filename = f"versions/ptracker-v{version}-win64-installer.exe"
+    else:
+        installer_filename = f"versions/ptracker-v{version}-installer.exe"
+    
+    r = nsis_builder(installer_filename, "ptracker.nsh")
 
     r.writestr(os.path.join("apps","python","ptracker","ptracker_lib","executable.py"),
                'ptracker_executable = ["apps/python/ptracker/dist/ptracker.exe"]\n'.encode(encoding="ascii"))
@@ -583,15 +590,39 @@ if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or
         r.write(src, tgt)
     
     if build_stracker_linux:
-        if REMOTE_BUILD_CMD is not None:
-            print("Executing remote build command:", REMOTE_BUILD_CMD)
-            rbuild_out = subprocess.run(REMOTE_BUILD_CMD, check=True, universal_newlines=True)
-            if REMOTE_COPY_RESULT is not None:
-                rcopy_out = subprocess.run(REMOTE_COPY_RESULT, check=True, universal_newlines=True)
-            r.write("stracker/stracker_linux_x86.tgz", "stracker_linux_x86.tgz")
-        else:
-            print("⚠️  Warning: REMOTE_BUILD_CMD not configured. Skipping Linux build.")
-            print("💡 Configure REMOTE_BUILD_CMD in release_settings.py for Linux compilation.")
+        print("------------------- Building stracker for Linux 64-bit -------------------------")
+        print("🐧 Usando Docker con Ubuntu 22.04 para compatibilidad exacta con servidor manager")
+        
+        # Build using Docker
+        try:
+            print("⏳ Construyendo imagen Docker...")
+            subprocess.run(["docker", "build", "-f", "Dockerfile.linux64", "-t", "sptracker-linux64", "."], 
+                          check=True, universal_newlines=True)
+            
+            print("⏳ Ejecutando compilación en contenedor...")
+            # Create versions directory if it doesn't exist
+            os.makedirs("versions", exist_ok=True)
+            
+            # Run the container
+            subprocess.run([
+                "docker", "run", "--rm", 
+                "-v", f"{os.getcwd()}/versions:/app/versions",
+                "sptracker-linux64"
+            ], check=True, universal_newlines=True)
+            
+            # Add the generated file to the archive
+            if os.path.exists("versions/stracker_linux_x86.tgz"):
+                r.write("versions/stracker_linux_x86.tgz", "stracker_linux_x86.tgz")
+                print("✅ Linux 64-bit build completed successfully")
+            else:
+                print("❌ Error: stracker_linux_x86.tgz not found in versions directory")
+                
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Error during Linux 64-bit build: {e}")
+            print("💡 Asegúrate de que Docker Desktop esté ejecutándose")
+        except FileNotFoundError:
+            print("❌ Error: Docker command not found")
+            print("💡 Instala Docker Desktop: https://www.docker.com/products/docker-desktop")
 
     if build_stracker_linux32:
         print("------------------- Building stracker for Linux 32-bit -------------------------")
@@ -677,7 +708,10 @@ fi
 
 # Create tarball
 echo "Creating Linux 32-bit distribution tarball..."
-tar -czf stracker_linux_x86_32.tgz -C dist stracker_linux32
+mkdir -p dist/tmp
+cp dist/stracker_linux32 dist/tmp/stracker
+tar -czf stracker_linux_x86_32.tgz -C dist/tmp stracker
+rm -rf dist/tmp
 
 echo "Linux 32-bit build completed successfully!"
 echo "Generated: stracker/stracker_linux_x86_32.tgz"
@@ -750,7 +784,14 @@ print("🎉 RELEASE BUILD COMPLETED SUCCESSFULLY! 🎉")
 print("=" * 80)
 
 if build_ptracker:
-    print(f"✅ ptracker: versions/ptracker-V{version}.exe")
+    # Show installer filename based on architecture
+    if windows32_only:
+        installer_display_name = f"ptracker-v{version}-win32-installer.exe"
+    elif windows_only:
+        installer_display_name = f"ptracker-v{version}-win64-installer.exe"
+    else:
+        installer_display_name = f"ptracker-v{version}-installer.exe"
+    print(f"✅ ptracker: versions/{installer_display_name}")
 
 if build_stracker_windows or build_stracker_windows32 or build_stracker_linux or build_stracker_linux32 or build_stracker_packager or build_stracker_arm32 or build_stracker_arm64:
     # Show the actual ZIP filename created

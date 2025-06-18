@@ -19,7 +19,7 @@ REM   - ARM 32-bit: stracker
 REM   - ARM 64-bit: stracker
 REM
 REM Uso: build_complete.cmd [version]
-REM Ejemplo: build_complete.cmd 3.5.3
+REM Ejemplo: build_complete.cmd 3.5.2
 REM =============================================================================
 
 setlocal enabledelayedexpansion
@@ -56,15 +56,15 @@ echo    🤖 ARM 32/64: solo stracker
 echo.
 echo ⚙️  ESTRATEGIA^:
 echo    🪟 Windows: Compilación nativa (create_release.py)
-echo    🐧 Linux: WSL nativo (build_linux_wsl_native.sh)  
-echo    🤖 ARM: Docker Desktop + QEMU (Dockerfiles)
+echo    🐧 Linux: Docker Desktop (Dockerfiles Linux32/64)  
+echo    🤖 ARM: Docker Desktop + QEMU (Dockerfiles ARM32/64)
 echo.
 echo ⏱️  TIEMPO ESTIMADO: 30-45 minutos
 echo.
 
 REM Obtener versión
 if "%1"=="" (
-    set /p VERSION="🔢 Introduce la versión a compilar (ej: 3.5.3): "
+    set /p VERSION="🔢 Introduce la versión a compilar (ej: 3.5.2): "
 ) else (
     set VERSION=%1
 )
@@ -89,13 +89,19 @@ echo.
 echo 🖥️ SOLO STRACKER (servidor únicamente)^:
 echo    3. Solo stracker Windows 64-bit
 echo    4. Solo stracker Windows 32-bit
-echo    5. Solo stracker Linux 64-bit (WSL)
-echo    6. Solo stracker Linux 32-bit (WSL)
+echo    5. Solo stracker Linux 64-bit (Docker)
+echo    6. Solo stracker Linux 32-bit (Docker)
 echo    7. Solo stracker ARM 32-bit (Docker)
 echo    8. Solo stracker ARM 64-bit (Docker)
 echo.
+echo 🚀 COMPILACIÓN MASIVA^:
+echo    9. TODOS - Windows (64-bit y 32-bit)
+echo    10. TODOS - Linux (64-bit y 32-bit vía Docker)
+echo    11. TODOS - ARM (ARM32 y ARM64 vía Docker)
+echo    12. COMPLETO - TODOS los binarios (Windows + Linux + ARM)
+echo.
 
-set /p CHOICE="🔢 Elige una opción (1-8): "
+set /p CHOICE="🔢 Elige una opción (1-12): "
 
 if "%CHOICE%"=="1" goto WINDOWS_64_FULL
 if "%CHOICE%"=="2" goto WINDOWS_32_FULL
@@ -105,9 +111,12 @@ if "%CHOICE%"=="5" goto STRACKER_LINUX64_ONLY
 if "%CHOICE%"=="6" goto STRACKER_LINUX32_ONLY
 if "%CHOICE%"=="7" goto STRACKER_ARM32_ONLY
 if "%CHOICE%"=="8" goto STRACKER_ARM64_ONLY
+if "%CHOICE%"=="9" goto BUILD_ALL_WINDOWS
+if "%CHOICE%"=="10" goto BUILD_ALL_LINUX
+if "%CHOICE%"=="11" goto BUILD_ALL_ARM
+if "%CHOICE%"=="12" goto BUILD_ALL_COMPLETE
 
 echo ❌ Opción no válida
-pause
 goto END
 
 REM =============================================================================
@@ -144,15 +153,15 @@ goto SUCCESS_COMPLETE
 
 :STRACKER_LINUX64_ONLY
 echo.
-echo 🐧 COMPILANDO SOLO STRACKER LINUX 64-BIT (WSL)
-echo ==============================================
+echo 🐧 COMPILANDO SOLO STRACKER LINUX 64-BIT (Docker)
+echo ===============================================
 call :COMPILE_STRACKER_LINUX64_ONLY
 goto SUCCESS_COMPLETE
 
 :STRACKER_LINUX32_ONLY
 echo.
-echo 🐧 COMPILANDO SOLO STRACKER LINUX 32-BIT (WSL)
-echo ==============================================
+echo 🐧 COMPILANDO SOLO STRACKER LINUX 32-BIT (Docker)
+echo ===============================================
 call :COMPILE_STRACKER_LINUX32_ONLY
 goto SUCCESS_COMPLETE
 
@@ -223,18 +232,23 @@ echo ✅ Solo stracker Windows 32-bit terminado
 exit /b 0
 
 :COMPILE_STRACKER_LINUX64_ONLY
-echo ⏳ Compilando solo stracker Linux 64-bit usando WSL...
-REM Convertir ruta de Windows a WSL de forma dinámica
-set "CURRENT_PATH=%cd%"
-REM Extraer la letra de la unidad y convertir a minúsculas
-set "DRIVE_LETTER=%CURRENT_PATH:~0,1%"
-call :TOLOWER %DRIVE_LETTER% DRIVE_LOWER
-REM Convertir ruta de Windows a formato WSL
-set "WSL_PATH=%CURRENT_PATH:~2%"
-set "WSL_PATH=%WSL_PATH:\=/%"
-set "WSL_PATH=/mnt/%DRIVE_LOWER%%WSL_PATH%"
-echo 📁 Ruta WSL detectada: %WSL_PATH%
-wsl -d Debian -- bash -c "cd '%WSL_PATH%' && chmod +x build_linux_wsl_native.sh && ./build_linux_wsl_native.sh '%VERSION%' linux64"
+echo ⏳ Compilando solo stracker Linux 64-bit usando Docker Desktop...
+echo 🐳 Verificando Docker Desktop...
+docker --version >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Error: Docker Desktop no está instalado o no se puede ejecutar
+    echo 💡 Instala Docker Desktop desde: https://www.docker.com/products/docker-desktop/
+    goto ERROR
+)
+echo ✅ Docker Desktop disponible
+echo 🔨 Construyendo imagen Docker Linux 64-bit (si es necesario)...
+docker build -f Dockerfile.linux64 -t sptracker-linux64 .
+if errorlevel 1 (
+    echo ❌ Error en construcción de imagen Docker Linux 64-bit
+    goto ERROR
+)
+echo � Ejecutando compilación Linux 64-bit en contenedor...
+docker run --rm -v "%cd%\versions":/workspace/versions sptracker-linux64 %VERSION%
 if errorlevel 1 (
     echo ❌ Error en compilación stracker Linux 64-bit
     goto ERROR
@@ -243,18 +257,23 @@ echo ✅ Solo stracker Linux 64-bit terminado
 exit /b 0
 
 :COMPILE_STRACKER_LINUX32_ONLY
-echo ⏳ Compilando solo stracker Linux 32-bit usando WSL...
-REM Convertir ruta de Windows a WSL de forma dinámica
-set "CURRENT_PATH=%cd%"
-REM Extraer la letra de la unidad y convertir a minúsculas
-set "DRIVE_LETTER=%CURRENT_PATH:~0,1%"
-call :TOLOWER %DRIVE_LETTER% DRIVE_LOWER
-REM Convertir ruta de Windows a formato WSL
-set "WSL_PATH=%CURRENT_PATH:~2%"
-set "WSL_PATH=%WSL_PATH:\=/%"
-set "WSL_PATH=/mnt/%DRIVE_LOWER%%WSL_PATH%"
-echo 📁 Ruta WSL detectada: %WSL_PATH%
-wsl -d Debian -- bash -c "cd '%WSL_PATH%' && chmod +x build_linux_wsl_native.sh && ./build_linux_wsl_native.sh '%VERSION%' linux32"
+echo ⏳ Compilando solo stracker Linux 32-bit usando Docker Desktop...
+echo 🐳 Verificando Docker Desktop...
+docker --version >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Error: Docker Desktop no está instalado o no se puede ejecutar
+    echo 💡 Instala Docker Desktop desde: https://www.docker.com/products/docker-desktop/
+    goto ERROR
+)
+echo ✅ Docker Desktop disponible
+echo 🔨 Construyendo imagen Docker Linux 32-bit (si es necesario)...
+docker build -f Dockerfile.linux32 -t sptracker-linux32 .
+if errorlevel 1 (
+    echo ❌ Error en construcción de imagen Docker Linux 32-bit
+    goto ERROR
+)
+echo � Ejecutando compilación Linux 32-bit en contenedor...
+docker run --rm -v "%cd%\versions":/app/versions sptracker-linux32 ./create_release_linux32.sh %VERSION%
 if errorlevel 1 (
     echo ❌ Error en compilación stracker Linux 32-bit
     goto ERROR
@@ -303,10 +322,11 @@ set "FINAL_IMAGE=!IMAGE_TAG!:latest"
 echo 📋 Información de debug:
 echo    🎯 Dockerfile: Dockerfile.arm32
 echo    🏷️  Tag objetivo: !FINAL_IMAGE!
-echo    🔧 Comando: docker buildx build --platform linux/arm/v7 -f Dockerfile.arm32 -t !FINAL_IMAGE! . --load
+echo    🔧 Builder: multiarch (con soporte ARM)
+echo    🔧 Comando: docker buildx build --builder multiarch --platform linux/arm/v7 -f Dockerfile.arm32 -t !FINAL_IMAGE! . --load
 echo.
 
-docker buildx build --platform linux/arm/v7 -f Dockerfile.arm32 -t "!FINAL_IMAGE!" . --load
+docker buildx build --builder multiarch --platform linux/arm/v7 -f Dockerfile.arm32 -t "!FINAL_IMAGE!" . --load
 if errorlevel 1 (
     echo ❌ Error en construcción de imagen Docker ARM32
     goto ERROR
@@ -363,10 +383,11 @@ set "FINAL_IMAGE=!IMAGE_TAG!:latest"
 echo 📋 Información de debug:
 echo    🎯 Dockerfile: Dockerfile.arm64
 echo    🏷️  Tag objetivo: !FINAL_IMAGE!
-echo    🔧 Comando: docker buildx build --platform linux/arm64 -f Dockerfile.arm64 -t !FINAL_IMAGE! . --load
+echo    🔧 Builder: multiarch (con soporte ARM)
+echo    🔧 Comando: docker buildx build --builder multiarch --platform linux/arm64 -f Dockerfile.arm64 -t !FINAL_IMAGE! . --load
 echo.
 
-docker buildx build --platform linux/arm64 -f Dockerfile.arm64 -t "!FINAL_IMAGE!" . --load
+docker buildx build --builder multiarch --platform linux/arm64 -f Dockerfile.arm64 -t "!FINAL_IMAGE!" . --load
 if errorlevel 1 (
     echo ❌ Error en construcción de imagen Docker ARM64
     goto ERROR
@@ -404,24 +425,17 @@ REM VERIFICAR ARCHIVOS PRINCIPALES GENERADOS
 REM =============================================================================
 echo 📦 Verificando archivos principales Windows...
 
-REM Renombrar instalador ptracker para nomenclatura estándar con arquitectura
-if exist "versions\ptracker-V%VERSION%.exe" (
-    REM Determinar arquitectura basada en qué se compiló
-    if %COMPILED_PTRACKER_64%==1 (
-        if not exist "versions\ptracker-v%VERSION%-win64-installer.exe" (
-            move "versions\ptracker-V%VERSION%.exe" "versions\ptracker-v%VERSION%-win64-installer.exe" >nul 2>&1
-        )
+REM Verificar instalador ptracker (ya con nomenclatura correcta)
+if %COMPILED_PTRACKER_64%==1 (
+    if exist "versions\ptracker-v%VERSION%-win64-installer.exe" (
         echo    ✅ ptracker-v%VERSION%-win64-installer.exe
-    ) else if %COMPILED_PTRACKER_32%==1 (
-        if not exist "versions\ptracker-v%VERSION%-win32-installer.exe" (
-            move "versions\ptracker-V%VERSION%.exe" "versions\ptracker-v%VERSION%-win32-installer.exe" >nul 2>&1
-        )
+    )
+) else if %COMPILED_PTRACKER_32%==1 (
+    if exist "versions\ptracker-v%VERSION%-win32-installer.exe" (
         echo    ✅ ptracker-v%VERSION%-win32-installer.exe
-    ) else (
-        REM Fallback - renombrar sin arquitectura específica si no está claro
-        if not exist "versions\ptracker-v%VERSION%-installer.exe" (
-            move "versions\ptracker-V%VERSION%.exe" "versions\ptracker-v%VERSION%-installer.exe" >nul 2>&1
-        )
+    )
+) else (
+    if exist "versions\ptracker-v%VERSION%-installer.exe" (
         echo    ✅ ptracker-v%VERSION%-installer.exe
     )
 )
@@ -570,6 +584,149 @@ echo 🎉 ¡COMPILACION SIMPLIFICADA - SOLO ARCHIVOS NECESARIOS!
 echo.
 goto END
 
+REM =============================================================================
+REM FUNCIONES DE COMPILACIÓN MASIVA
+REM =============================================================================
+
+:BUILD_ALL_WINDOWS
+echo.
+echo 🪟 COMPILACIÓN MASIVA - TODOS LOS BINARIOS WINDOWS (64-bit y 32-bit)
+echo =================================================================
+echo.
+echo 📋 Secuencia de compilación:
+echo    1. Windows 64-bit completo
+echo    2. Windows 32-bit completo
+echo.
+echo ⏱️ Tiempo estimado: 10-15 minutos
+echo.
+echo 🚀 Iniciando compilación en secuencia...
+echo.
+
+call :PRINT_STEP "Windows 64-bit completo" "ptracker + stracker + packager (64-bit)"
+call :COMPILE_WINDOWS_64_FULL
+if errorlevel 1 goto ERROR
+
+call :PRINT_STEP "Windows 32-bit completo" "ptracker + stracker + packager (32-bit)"
+call :COMPILE_WINDOWS_32_FULL
+if errorlevel 1 goto ERROR
+
+echo.
+echo ✅ COMPILACIÓN MASIVA WINDOWS COMPLETADA
+goto SUCCESS_COMPLETE
+
+:BUILD_ALL_LINUX
+echo.
+echo 🐧 COMPILACIÓN MASIVA - TODOS LOS BINARIOS LINUX (64-bit y 32-bit)
+echo ===============================================================
+echo.
+echo 📋 Secuencia de compilación:
+echo    1. Linux 64-bit (Docker)
+echo    2. Linux 32-bit (Docker)
+echo.
+echo ⏱️ Tiempo estimado: 15-25 minutos
+echo.
+echo 🚀 Iniciando compilación en secuencia...
+echo.
+
+call :PRINT_STEP "Linux 64-bit (Docker)" "stracker (64-bit)"
+call :COMPILE_STRACKER_LINUX64_ONLY
+if errorlevel 1 goto ERROR
+
+call :PRINT_STEP "Linux 32-bit (Docker)" "stracker (32-bit)"
+call :COMPILE_STRACKER_LINUX32_ONLY
+if errorlevel 1 goto ERROR
+
+echo.
+echo ✅ COMPILACIÓN MASIVA LINUX COMPLETADA
+goto SUCCESS_COMPLETE
+
+:BUILD_ALL_ARM
+echo.
+echo 🤖 COMPILACIÓN MASIVA - TODOS LOS BINARIOS ARM (32-bit y 64-bit)
+echo ==============================================================
+echo.
+echo 📋 Secuencia de compilación:
+echo    1. ARM 32-bit (Docker)
+echo    2. ARM 64-bit (Docker)
+echo.
+echo ⏱️ Tiempo estimado: 10-15 minutos
+echo.
+echo 🚀 Iniciando compilación en secuencia...
+echo.
+
+call :PRINT_STEP "ARM 32-bit (Docker)" "stracker (arm32)"
+call :COMPILE_STRACKER_ARM32_ONLY
+if errorlevel 1 goto ERROR
+
+call :PRINT_STEP "ARM 64-bit (Docker)" "stracker (arm64)"
+call :COMPILE_STRACKER_ARM64_ONLY
+if errorlevel 1 goto ERROR
+
+echo.
+echo ✅ COMPILACIÓN MASIVA ARM COMPLETADA
+goto SUCCESS_COMPLETE
+
+:BUILD_ALL_COMPLETE
+echo.
+echo 🌟 COMPILACIÓN COMPLETA - TODOS LOS BINARIOS (Windows + Linux + ARM)
+echo =================================================================
+echo.
+echo 📋 Secuencia de compilación:
+echo    1. Windows 64-bit completo
+echo    2. Windows 32-bit completo
+echo    3. Linux 64-bit (WSL)
+echo    4. Linux 32-bit (WSL)
+echo    5. ARM 32-bit (Docker)
+echo    6. ARM 64-bit (Docker)
+echo.
+echo ⏱️ Tiempo estimado: 30-45 minutos
+echo.
+echo 🚀 Iniciando compilación en secuencia...
+echo.
+
+call :PRINT_STEP "Windows 64-bit completo" "ptracker + stracker + packager (64-bit)"
+call :COMPILE_WINDOWS_64_FULL
+if errorlevel 1 goto ERROR
+
+call :PRINT_STEP "Windows 32-bit completo" "ptracker + stracker + packager (32-bit)"
+call :COMPILE_WINDOWS_32_FULL
+if errorlevel 1 goto ERROR
+
+call :PRINT_STEP "Linux 64-bit (WSL)" "stracker (64-bit)"
+call :COMPILE_STRACKER_LINUX64_ONLY
+if errorlevel 1 goto ERROR
+
+call :PRINT_STEP "Linux 32-bit (WSL)" "stracker (32-bit)"
+call :COMPILE_STRACKER_LINUX32_ONLY
+if errorlevel 1 goto ERROR
+
+call :PRINT_STEP "ARM 32-bit (Docker)" "stracker (arm32)"
+call :COMPILE_STRACKER_ARM32_ONLY
+if errorlevel 1 goto ERROR
+
+call :PRINT_STEP "ARM 64-bit (Docker)" "stracker (arm64)"
+call :COMPILE_STRACKER_ARM64_ONLY
+if errorlevel 1 goto ERROR
+
+echo.
+echo ✅ COMPILACIÓN COMPLETA FINALIZADA - TODOS LOS BINARIOS GENERADOS
+goto SUCCESS_COMPLETE
+
+:SUCCESS_COMPLETE
+echo.
+echo =============================================================================
+echo ✅ COMPILACIÓN EXITOSA
+echo =============================================================================
+echo.
+goto RENAME_GENERATED_FILES
+
+:RENAME_GENERATED_FILES
+echo.
+echo =============================================================================
+echo 🏷️ ESTANDARIZANDO NOMENCLATURA DE ARCHIVOS GENERADOS
+echo =============================================================================
+echo.
+
 :ERROR
 echo.
 echo =============================================================================
@@ -639,5 +796,4 @@ exit /b 0
 echo.
 echo 👋 Script completado
 echo 📅 %DATE% %TIME%
-pause
 exit /b 0

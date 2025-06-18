@@ -1,0 +1,83 @@
+# Dockerfile para compilación sptracker Linux 64-bit
+# =================================================
+# 
+# Este Dockerfile compila sptracker para Linux x64 
+# usando Ubuntu 22.04 para compatibilidad exacta con el servidor manager
+#
+# USO:
+#   docker build -f Dockerfile.linux64 -t sptracker-linux64 .
+#   docker run --rm -v "${PWD}/versions:/app/versions" sptracker-linux64
+#
+
+# Usar Ubuntu 22.04 para compatibilidad con el servidor manager
+FROM ubuntu:22.04
+
+# Configurar zona horaria para evitar prompts interactivos
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Metadatos
+LABEL maintainer="sptracker-dev"
+LABEL description="sptracker Linux x64 build environment"
+LABEL version="1.0"
+LABEL architecture="amd64"
+LABEL glibc_version="2.35"
+
+# Variables de entorno
+ENV APP_HOME=/app
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_BUILD_ISOLATION=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Establecer el directorio de trabajo
+WORKDIR ${APP_HOME}
+
+# Mostrar información del sistema para debug
+RUN echo "=== INFORMACIÓN DEL SISTEMA ===" && \
+    cat /etc/os-release && \
+    echo "=== VERSIÓN GLIBC ===" && \
+    ldd --version
+
+# Install Python and build dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    gcc \
+    g++ \
+    libffi-dev \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    curl \
+    git \
+    postgresql-client \
+    libpq-dev \
+    file \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear alias para python
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Create working directory
+WORKDIR /app
+
+# Copy source code
+COPY . /app/
+
+# Create virtual environment
+RUN python -m venv env/linux64
+RUN env/linux64/bin/pip install --upgrade pip
+
+# Install Python packages
+RUN env/linux64/bin/pip install bottle cherrypy python-dateutil wsgi-request-logger simplejson pyinstaller psycopg2-binary apsw
+
+# Build script
+COPY create_release_linux64.sh /app/
+RUN chmod +x /app/create_release_linux64.sh
+
+# Run build (receive version as parameter)
+ENTRYPOINT ["/app/create_release_linux64.sh"]
